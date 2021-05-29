@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import se.llbit.chunky.ui.*?>
 
-<fx:root type="javafx.scene.control.ScrollPane" xmlns="http://javafx.com/javafx/11.0.10-internal" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root type="javafx.scene.control.ScrollPane" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
     <VBox spacing="10.0">
       <children>
         <FlowPane hgap="10" vgap="10">
