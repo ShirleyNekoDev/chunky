@@ -447,6 +447,7 @@ public class Scene implements JsonSerializable, Refreshable {
       worldOctree = other.worldOctree;
       waterOctree = other.waterOctree;
       entities = other.entities;
+      entityLoadingPreferences = other.entityLoadingPreferences;
       actors = new LinkedList<>(other.actors); // Create a copy so that entity changes can be reset.
       profiles = other.profiles;
       bvh = other.bvh;
