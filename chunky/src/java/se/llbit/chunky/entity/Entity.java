@@ -19,7 +19,6 @@ package se.llbit.chunky.entity;
 
 import java.util.Collection;
 
-import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.chunk.BlockPalette;
 import se.llbit.json.JsonObject;
 import se.llbit.json.JsonValue;
