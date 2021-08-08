@@ -370,6 +370,8 @@ public class Scene implements JsonSerializable, Refreshable {
   private String renderer = DefaultRenderManager.ChunkyPathTracerID;
   private String previewRenderer = DefaultRenderManager.ChunkyPreviewID;
 
+  protected volatile boolean isLoading = false;
+
   /**
    * Creates a scene with all default settings.
    *
@@ -561,55 +563,60 @@ public class Scene implements JsonSerializable, Refreshable {
    */
   public synchronized void loadScene(RenderContext context, String sceneName, TaskTracker taskTracker)
       throws IOException {
+    isLoading = true;
     try {
-      loadDescription(context.getSceneDescriptionInputStream(sceneName));
-    } catch (FileNotFoundException e) {
-      // scene.json not found, try loading the backup file
-      Log.info("Scene description file not found, trying to load the backup file instead", e);
-      loadDescription(context.getSceneFileInputStream(sceneName + Scene.EXTENSION + ".backup"));
-    }
-
-    if (sdfVersion < SDF_VERSION) {
-      Log.warn("Old scene version detected! The scene may not have been loaded correctly.");
-    } else if (sdfVersion > SDF_VERSION) {
-      Log.warn("This scene was created with a newer version of Chunky! The scene may not have been loaded correctly.");
-    }
-
-    // Load the configured skymap file.
-    sky.loadSkymap();
-
-    if (!worldPath.isEmpty()) {
-      File worldDirectory = new File(worldPath);
-      if (World.isWorldDir(worldDirectory)) {
-        loadedWorld = World.loadWorld(worldDirectory, worldDimension, World.LoggedWarnings.NORMAL);
-      } else {
-        Log.info("Could not load world: " + worldPath);
+      try {
+        loadDescription(context.getSceneDescriptionInputStream(sceneName));
+      } catch (FileNotFoundException e) {
+        // scene.json not found, try loading the backup file
+        Log.info("Scene description file not found, trying to load the backup file instead", e);
+        loadDescription(context.getSceneFileInputStream(sceneName + Scene.EXTENSION + ".backup"));
       }
-    }
 
-    loadDump(context, taskTracker);
-
-    if (spp == 0) {
-      mode = RenderMode.PREVIEW;
-    } else if (mode == RenderMode.RENDERING) {
-      mode = RenderMode.PAUSED;
-    }
-
-    boolean emitterGridNeedChunkReload = false;
-    if (emitterSamplingStrategy != EmitterSamplingStrategy.NONE)
-      emitterGridNeedChunkReload = !loadEmitterGrid(context, taskTracker);
-    boolean octreeLoaded = loadOctree(context, taskTracker);
-    if (emitterGridNeedChunkReload || !octreeLoaded) {
-      // Could not load stored octree or emitter grid.
-      // Load the chunks from the world.
-      if (loadedWorld == EmptyWorld.INSTANCE) {
-        Log.warn("Could not load chunks (no world found for scene)");
-      } else {
-        loadChunks(taskTracker, loadedWorld, chunks);
+      if (sdfVersion < SDF_VERSION) {
+        Log.warn("Old scene version detected! The scene may not have been loaded correctly.");
+      } else if (sdfVersion > SDF_VERSION) {
+        Log.warn("This scene was created with a newer version of Chunky! The scene may not have been loaded correctly.");
       }
-    }
 
-    notifyAll();
+      // Load the configured skymap file.
+      sky.loadSkymap();
+
+      if (!worldPath.isEmpty()) {
+        File worldDirectory = new File(worldPath);
+        if (World.isWorldDir(worldDirectory)) {
+          loadedWorld = World.loadWorld(worldDirectory, worldDimension, World.LoggedWarnings.NORMAL);
+        } else {
+          Log.info("Could not load world: " + worldPath);
+        }
+      }
+
+      loadDump(context, taskTracker);
+
+      if (spp == 0) {
+        mode = RenderMode.PREVIEW;
+      } else if (mode == RenderMode.RENDERING) {
+        mode = RenderMode.PAUSED;
+      }
+
+      boolean emitterGridNeedChunkReload = false;
+      if (emitterSamplingStrategy != EmitterSamplingStrategy.NONE)
+        emitterGridNeedChunkReload = !loadEmitterGrid(context, taskTracker);
+      boolean octreeLoaded = loadOctree(context, taskTracker);
+      if (emitterGridNeedChunkReload || !octreeLoaded) {
+        // Could not load stored octree or emitter grid.
+        // Load the chunks from the world.
+        if (loadedWorld == EmptyWorld.INSTANCE) {
+          Log.warn("Could not load chunks (no world found for scene)");
+        } else {
+          loadChunks(taskTracker, loadedWorld, chunks);
+        }
+      }
+
+      notifyAll();
+    } finally {
+      isLoading = false;
+    }
   }
 
   /**
@@ -814,12 +821,12 @@ public class Scene implements JsonSerializable, Refreshable {
   }
 
   /**
-   * Test if the ray should be killed (using Russian Roulette).
+   * Test if the ray should be killed <strike>(using Russian Roulette)</strike>.
    *
    * @return {@code true} if the ray needs to die now
    */
   public final boolean kill(int depth, Random random) {
-    return depth >= rayDepth && random.nextDouble() < .5f;
+    return depth >= rayDepth;
   }
 
   /**
@@ -845,6 +852,8 @@ public class Scene implements JsonSerializable, Refreshable {
   public synchronized void loadChunks(TaskTracker taskTracker, World world, Collection<ChunkPosition> chunksToLoad) {
     if (world == null)
       return;
+
+    isLoading = true;
 
     boolean isTallWorld = world.getVersionId() >= World.VERSION_21W06A;
     if (isTallWorld) {
@@ -909,11 +918,13 @@ public class Scene implements JsonSerializable, Refreshable {
           try {
             profile = MojangApi.fetchProfile(entity.uuid);
             PlayerSkin skin = MojangApi.getSkinFromProfile(profile);
-            String skinUrl = skin.getUrl();
-            if (skinUrl != null) {
-              entity.skin = MojangApi.downloadSkin(skinUrl).getAbsolutePath();
+            if (skin != null) {
+              String skinUrl = skin.getUrl();
+              if (skinUrl != null) {
+                entity.skin = MojangApi.downloadSkin(skinUrl).getAbsolutePath();
+              }
+              entity.model = skin.getModel();
             }
-            entity.model = skin.getModel();
           } catch (IOException e) {
             Log.error(e);
             profile = new JsonObject();
@@ -1400,6 +1411,10 @@ public class Scene implements JsonSerializable, Refreshable {
 
       worldOctree.endFinalization();
       waterOctree.endFinalization();
+
+      grassTexture.compact();
+      foliageTexture.compact();
+      waterTexture.compact();
     }
 
     for (Entity entity : actors) {
@@ -1422,6 +1437,8 @@ public class Scene implements JsonSerializable, Refreshable {
       buildActorBvh(task);
     }
     Log.info(String.format("Loaded %d chunks", numChunks));
+
+    isLoading = false;
   }
 
   private void buildBvh(TaskTracker.Task task) {
@@ -1994,14 +2011,14 @@ public class Scene implements JsonSerializable, Refreshable {
   }
 
   /**
-   * Save the current frame as a PNG or TIFF image, depending on this scene's outputMode.
+   * Save the current frame (e.g. as a PNG, TIFF, or PFM image), depending on this scene's outputMode.
    */
   public synchronized void saveFrame(File targetFile, TaskTracker taskTracker, int threadCount) {
     this.saveFrame(targetFile, getOutputMode(), taskTracker, threadCount);
   }
 
   /**
-   * Save the current frame as a PNG or TIFF image.
+   * Save the current frame (e.g. as a PNG, TIFF, or PFM image), depending on this scene's outputMode.
    */
   public synchronized void saveFrame(File targetFile, PictureExportFormat mode, TaskTracker taskTracker, int threadCount) {
     if (mode.isTransparencySupported()) {
@@ -3316,7 +3333,7 @@ public class Scene implements JsonSerializable, Refreshable {
   }
 
   public void setPreviewRenderer(String previewRenderer) {
-    this.previewRenderer = renderer;
+    this.previewRenderer = previewRenderer;
     refresh();
   }
 
@@ -3324,13 +3341,17 @@ public class Scene implements JsonSerializable, Refreshable {
     return previewRenderer;
   }
 
+  public boolean isLoading() {
+    return isLoading;
+  }
+
   /**
-   * Add additional data
+   * Add additional data.
    * Additional data is not used by chunky but can be used by plugins
    */
   @PluginApi
   public void setAdditionalData(String name, JsonValue value) {
-    additionalData.add(name, value);
+    additionalData.set(name, value);
   }
 
   /**
