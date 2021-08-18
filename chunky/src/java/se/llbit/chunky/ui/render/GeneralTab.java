@@ -21,17 +21,11 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.cell.CheckBoxTreeCell;
 import javafx.scene.image.ImageView;
+import javafx.util.Callback;
 import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.entity.ArmorStand;
 import se.llbit.chunky.entity.Book;
@@ -80,13 +74,14 @@ public class GeneralTab extends ScrollPane implements RenderControlsTab, Initial
   @FXML private Button scale05;
   @FXML private Button scale15;
   @FXML private Button scale20;
-  @FXML private Button loadAllEntities;
-  @FXML private Button loadNoEntity;
-  @FXML private CheckBox loadPlayers;
-  @FXML private CheckBox loadArmorStands;
-  @FXML private CheckBox loadBooks;
-  @FXML private CheckBox loadPaintings;
-  @FXML private CheckBox loadOtherEntities;
+  @FXML private TreeView<String> entityLoading;
+//  @FXML private Button loadAllEntities;
+//  @FXML private Button loadNoEntity;
+  @FXML private CheckBoxTreeItem loadPlayers;
+  @FXML private CheckBoxTreeItem loadArmorStands;
+  @FXML private CheckBoxTreeItem loadBooks;
+  @FXML private CheckBoxTreeItem loadPaintings;
+  @FXML private CheckBoxTreeItem loadOtherEntities;
   @FXML private CheckBox biomeColors;
   @FXML private CheckBox saveDumps;
   @FXML private CheckBox saveSnapshots;
@@ -195,70 +190,84 @@ public class GeneralTab extends ScrollPane implements RenderControlsTab, Initial
           }
         });
 
-    loadPlayers.setTooltip(new Tooltip("Enable/disable player entity loading. "
-        + "Takes effect on next scene creation."));
+    entityLoading.setCellFactory(new Callback<TreeView<String>, TreeCell<String>>() {
+      Callback<TreeView<String>, TreeCell<String>> original = CheckBoxTreeCell.forTreeView();
+
+      @Override
+      public TreeCell<String> call(TreeView<String> param) {
+        TreeCell<String> cell = original.call(param);
+        TreeItem<String> item = cell.getTreeItem();
+        Node node = cell.getDisclosureNode();
+        System.out.println(param + " " + cell + " " + cell.getText() + " " + cell.getItem() + " " + item + " " + node);
+        if(node != null) node.setVisible(false);
+        return cell;
+      }
+    });
+
+//    loadPlayers.setTooltip(new Tooltip("Enable/disable player entity loading. "
+//        + "Takes effect on next scene creation."));
     loadPlayers.selectedProperty().addListener((observable, oldValue, newValue) -> {
       scene.getEntityLoadingPreferences().setPreference(PlayerEntity.class, newValue);
       PersistentSettings.setLoadPlayers(newValue);
     });
-    loadPlayers.setOnAction(event -> {
-      renderControls.showPopup(
-              "This takes effect the next time a new scene is created.", loadPlayers);
-    });
-    loadArmorStands.setTooltip(new Tooltip("Enable/disable armor stand entity loading. "
-            + "Takes effect on next scene creation."));
+//    loadPlayers.setOnAction(event -> {
+//      renderControls.showPopup(
+//              "This takes effect the next time a new scene is created.", loadPlayers);
+//    });
+//    loadArmorStands.setTooltip(new Tooltip("Enable/disable armor stand entity loading. "
+//            + "Takes effect on next scene creation."));
     loadArmorStands.selectedProperty().addListener((observable, oldValue, newValue) -> {
       scene.getEntityLoadingPreferences().setPreference(ArmorStand.class, newValue);
       PersistentSettings.setLoadArmorStands(newValue);
     });
-    loadArmorStands.setOnAction(event -> {
-      renderControls.showPopup(
-              "This takes effect the next time a new scene is created.", loadArmorStands);
-    });
-    loadBooks.setTooltip(new Tooltip("Enable/disable book entity loading. "
-            + "Takes effect on next scene creation."));
+//    loadArmorStands.setOnAction(event -> {
+//      renderControls.showPopup(
+//              "This takes effect the next time a new scene is created.", loadArmorStands);
+//    });
+//    loadBooks.setTooltip(new Tooltip("Enable/disable book entity loading from enchanting tables). "
+//            + "Takes effect on next chunk loading."));
     loadBooks.selectedProperty().addListener((observable, oldValue, newValue) -> {
       scene.getEntityLoadingPreferences().setPreference(Book.class, newValue);
       PersistentSettings.setLoadBooks(newValue);
     });
-    loadBooks.setOnAction(event -> {
-      renderControls.showPopup(
-              "This takes effect the next time a new scene is created.", loadBooks);
-    });
-    loadPaintings.setTooltip(new Tooltip("Enable/disable painting entity loading. "
-            + "Takes effect on next scene creation."));
+//    loadBooks.setOnAction(event -> {
+//      renderControls.showPopup(
+//              "This takes effect the next time a new scene is created.", loadBooks);
+//    });
+//    loadPaintings.setTooltip(new Tooltip("Enable/disable painting entity loading. "
+//            + "Takes effect on next scene creation."));
     loadPaintings.selectedProperty().addListener((observable, oldValue, newValue) -> {
       scene.getEntityLoadingPreferences().setPreference(PaintingEntity.class, newValue);
       PersistentSettings.setLoadPaintings(newValue);
     });
-    loadPaintings.setOnAction(event -> {
-      renderControls.showPopup(
-              "This takes effect the next time a new scene is created.", loadPaintings);
-    });
-    loadOtherEntities.setTooltip(new Tooltip("Enable/disable other entity loading. "
-            + "Takes effect on next scene creation."));
+//    loadPaintings.setOnAction(event -> {
+//      renderControls.showPopup(
+//              "This takes effect the next time a new scene is created.", loadPaintings);
+//    });
+//    loadOtherEntities.setTooltip(new Tooltip("Enable/disable other entity loading. "
+//            + "Takes effect on next scene creation."));
     loadOtherEntities.selectedProperty().addListener((observable, oldValue, newValue) -> {
       scene.getEntityLoadingPreferences().setPreference(null, newValue);
       PersistentSettings.setLoadOtherEntities(newValue);
     });
-    loadOtherEntities.setOnAction(event -> {
-      renderControls.showPopup(
-              "This takes effect the next time a new scene is created.", loadOtherEntities);
-    });
-    loadAllEntities.setOnAction(event -> {
-      loadPlayers.setSelected(true);
-      loadArmorStands.setSelected(true);
-      loadBooks.setSelected(true);
-      loadPaintings.setSelected(true);
-      loadOtherEntities.setSelected(true);
-    });
-    loadNoEntity.setOnAction(event -> {
-      loadPlayers.setSelected(false);
-      loadArmorStands.setSelected(false);
-      loadBooks.setSelected(false);
-      loadPaintings.setSelected(false);
-      loadOtherEntities.setSelected(false);
-    });
+//    loadOtherEntities.setOnAction(event -> {
+//      renderControls.showPopup(
+//              "This takes effect the next time a new scene is created.", loadOtherEntities);
+//    });
+//    loadAllEntities.setOnAction(event -> {
+//      loadPlayers.setSelected(true);
+//      loadArmorStands.setSelected(true);
+//      loadBooks.setSelected(true);
+//      loadPaintings.setSelected(true);
+//      loadOtherEntities.setSelected(true);
+//    });
+//    loadNoEntity.setOnAction(event -> {
+//      loadPlayers.setSelected(false);
+//      loadArmorStands.setSelected(false);
+//      loadBooks.setSelected(false);
+//      loadPaintings.setSelected(false);
+//      loadOtherEntities.setSelected(false);
+//    });
 
     biomeColors.setTooltip(new Tooltip("Colors grass and tree leaves according to biome."));
     biomeColors.selectedProperty().addListener((observable, oldValue, newValue) -> {

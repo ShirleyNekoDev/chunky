@@ -6,6 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import se.llbit.chunky.ui.*?>
 
+<?import javafx.scene.control.cell.CheckBoxListCell?>
 <fx:root type="javafx.scene.control.ScrollPane" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1">
   <Group>
     <VBox spacing="10.0">
@@ -35,18 +36,28 @@
         <Button fx:id="scale20" mnemonicParsing="false" text="x2" />
       </HBox>
       <Separator />
-      <TitledPane animated="false" text="Load entities">
-        <VBox spacing="10.0">
-          <HBox spacing="10.0">
-            <Button fx:id="loadAllEntities" mnemonicParsing="false" text="Select All" />
-            <Button fx:id="loadNoEntity" mnemonicParsing="false" text="Deselect All" />
-          </HBox>
-          <CheckBox fx:id="loadPlayers" mnemonicParsing="false" text="Players" />
-          <CheckBox fx:id="loadArmorStands" mnemonicParsing="false" text="Armor stands" />
-          <CheckBox fx:id="loadBooks" mnemonicParsing="false" text="Books" />
-          <CheckBox fx:id="loadPaintings" mnemonicParsing="false" text="Paintings" />
-          <CheckBox fx:id="loadOtherEntities" mnemonicParsing="false" text="Other" />
-        </VBox>
+      <TitledPane animated="false" text="Entity loading" expanded="false">
+<!--        <padding>-->
+<!--          <Insets bottom="0.0" left="0.0" right="0.0" top="0.0" />-->
+<!--        </padding>-->
+<!--        <Label text="Persistent setting" />-->
+<!--        <VBox spacing="10.0">-->
+<!--          <HBox spacing="10.0">-->
+<!--            <Button fx:id="loadAllEntities" mnemonicParsing="false" text="Select All" />-->
+<!--            <Button fx:id="loadNoEntity" mnemonicParsing="false" text="Deselect All" />-->
+<!--          </HBox>-->
+          <TreeView fx:id="entityLoading">
+            <CheckBoxTreeItem value="Load entities" expanded="true">
+              <children>
+                <CheckBoxTreeItem fx:id="loadPlayers" value="Players" />
+                <CheckBoxTreeItem fx:id="loadArmorStands" value="Armor stands" />
+                <CheckBoxTreeItem fx:id="loadBooks" value="Books (from enchanting tables)" />
+                <CheckBoxTreeItem fx:id="loadPaintings" value="Paintings" />
+                <CheckBoxTreeItem fx:id="loadOtherEntities" value="Other" />
+              </children>
+            </CheckBoxTreeItem>
+          </TreeView>
+<!--        </VBox>-->
       </TitledPane>
       <CheckBox fx:id="biomeColors" mnemonicParsing="false" text="Enable biome colors" />
       <HBox alignment="CENTER_LEFT" spacing="10.0">
