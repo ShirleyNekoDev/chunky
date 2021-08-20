@@ -117,10 +117,6 @@ public abstract class Material {
     return texture;
   }
 
-  public void getColor(Ray ray) {
-    texture.getColor(ray);
-  }
-
   public float[] getColor(double u, double v) {
     return texture.getColor(u, v);
   }

@@ -28,15 +28,15 @@ public class BeaconBeamMaterial extends Material {
         return color;
     }
 
-    @Override
-    public void getColor(Ray ray) {
-        super.getColor(ray);
-        if (ray.color.w > Ray.EPSILON) {
-            ray.color.x *= beamColor[0];
-            ray.color.y *= beamColor[1];
-            ray.color.z *= beamColor[2];
-        }
-    }
+//    @Override
+//    public void getColor(Ray ray) {
+//        super.texture.getColor(ray);
+//        if (ray.color.w > Ray.EPSILON) {
+//            ray.color.x *= beamColor[0];
+//            ray.color.y *= beamColor[1];
+//            ray.color.z *= beamColor[2];
+//        }
+//    }
 
     @Override
     public float[] getColor(double u, double v) {

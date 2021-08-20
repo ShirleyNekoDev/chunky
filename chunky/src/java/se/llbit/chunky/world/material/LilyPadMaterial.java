@@ -35,15 +35,15 @@ public class LilyPadMaterial extends Material {
     super("lily_pad", Texture.lilyPad);
   }
 
-  @Override
-  public void getColor(Ray ray) {
-    super.getColor(ray);
-    if (ray.color.w > Ray.EPSILON) {
-      ray.color.x *= lilyPadColor[0];
-      ray.color.y *= lilyPadColor[1];
-      ray.color.z *= lilyPadColor[2];
-    }
-  }
+//  @Override
+//  public void getColor(Ray ray) {
+//    super.texture.getColor(ray);
+//    if (ray.color.w > Ray.EPSILON) {
+//      ray.color.x *= lilyPadColor[0];
+//      ray.color.y *= lilyPadColor[1];
+//      ray.color.z *= lilyPadColor[2];
+//    }
+//  }
 
   @Override
   public float[] getColor(double u, double v) {
