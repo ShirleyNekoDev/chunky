@@ -34,28 +34,28 @@ import se.llbit.math.Vector4;
 public class WaterModel {
 
   private static Quad[] fullBlock = {
-      // bottom
-      new DoubleSidedQuad(new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1),
-          new Vector4(0, 1, 0, 1)),
-      // top
-      new DoubleSidedQuad(new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(0, 1, 1),
-          new Vector4(0, 1, 0, 1)),
-      // west
-      new DoubleSidedQuad(new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1),
-          new Vector4(0, 1, 0, 1)),
-      // east
-      new DoubleSidedQuad(new Vector3(1, 0, 0), new Vector3(1, 1, 0), new Vector3(1, 0, 1),
-          new Vector4(0, 1, 0, 1)),
-      // north
-      new DoubleSidedQuad(new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(0, 0, 0),
-          new Vector4(0, 1, 0, 0)),
-      // south
-      new DoubleSidedQuad(new Vector3(0, 1, 1), new Vector3(1, 1, 1), new Vector3(0, 0, 1),
-          new Vector4(0, 1, 0, 1)),};
+    // bottom
+    new DoubleSidedQuad(new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1),
+      new Vector4(0, 1, 0, 1)),
+    // top
+    new DoubleSidedQuad(new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(0, 1, 1),
+      new Vector4(0, 1, 0, 1)),
+    // west
+    new DoubleSidedQuad(new Vector3(0, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1),
+      new Vector4(0, 1, 0, 1)),
+    // east
+    new DoubleSidedQuad(new Vector3(1, 0, 0), new Vector3(1, 1, 0), new Vector3(1, 0, 1),
+      new Vector4(0, 1, 0, 1)),
+    // north
+    new DoubleSidedQuad(new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(0, 0, 0),
+      new Vector4(0, 1, 0, 0)),
+    // south
+    new DoubleSidedQuad(new Vector3(0, 1, 1), new Vector3(1, 1, 1), new Vector3(0, 0, 1),
+      new Vector4(0, 1, 0, 1)),};
 
   static final DoubleSidedQuad bot =
-      new DoubleSidedQuad(new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1),
-          new Vector4(0, 1, 0, 1));
+    new DoubleSidedQuad(new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 0, 1),
+      new Vector4(0, 1, 0, 1));
   static final Triangle[][][] t012 = new Triangle[8][8][8];
   static final Triangle[][][] t230 = new Triangle[8][8][8];
   static final Triangle[][] westt = new Triangle[8][8];
@@ -71,7 +71,7 @@ public class WaterModel {
    * Water height levels
    */
   static final double height[] =
-      {14 / 16., 12.25 / 16., 10.5 / 16, 8.75 / 16, 7. / 16, 5.25 / 16, 3.5 / 16, 1.75 / 16};
+    {14 / 16., 12.25 / 16., 10.5 / 16, 8.75 / 16, 7. / 16, 5.25 / 16, 3.5 / 16, 1.75 / 16};
 
   private static final float[] normalMap;
   private static final int normalMapW;
@@ -85,7 +85,7 @@ public class WaterModel {
     // precompute normal map
     Texture waterHeight = new Texture("water-height");
     normalMapW = waterHeight.getWidth();
-    normalMap = new float[normalMapW*normalMapW*2];
+    normalMap = new float[normalMapW * normalMapW * 2];
     for (int u = 0; u < normalMapW; ++u) {
       for (int v = 0; v < normalMapW; ++v) {
 
@@ -93,8 +93,8 @@ public class WaterModel {
         float hx1 = (waterHeight.getColorWrapped(u + 1, v) & 0xFF) / 255.f;
         float hz0 = (waterHeight.getColorWrapped(u, v) & 0xFF) / 255.f;
         float hz1 = (waterHeight.getColorWrapped(u, v + 1) & 0xFF) / 255.f;
-        normalMap[(u*normalMapW + v) * 2] = hx1 - hx0;
-        normalMap[(u*normalMapW + v) * 2 + 1] = hz1 - hz0;
+        normalMap[(u * normalMapW + v) * 2] = hx1 - hx0;
+        normalMap[(u * normalMapW + v) * 2 + 1] = hz1 - hz0;
       }
     }
 
@@ -106,7 +106,7 @@ public class WaterModel {
         for (int k = 0; k < 8; ++k) {
           double c2 = height[k];
           t012[i][j][k] =
-              new Triangle(new Vector3(1, c1, 1), new Vector3(1, c2, 0), new Vector3(0, c0, 1));
+            new Triangle(new Vector3(1, c1, 1), new Vector3(1, c2, 0), new Vector3(0, c0, 1));
         }
       }
     }
@@ -117,7 +117,7 @@ public class WaterModel {
         for (int k = 0; k < 8; ++k) {
           double c0 = height[k];
           t230[i][j][k] =
-              new Triangle(new Vector3(0, c3, 0), new Vector3(0, c0, 1), new Vector3(1, c2, 0));
+            new Triangle(new Vector3(0, c3, 0), new Vector3(0, c0, 1), new Vector3(1, c2, 0));
         }
       }
     }
@@ -126,7 +126,7 @@ public class WaterModel {
       for (int j = 0; j < 8; ++j) {
         double c3 = height[j];
         westt[i][j] =
-            new Triangle(new Vector3(0, c3, 0), new Vector3(0, 0, 0), new Vector3(0, c0, 1));
+          new Triangle(new Vector3(0, c3, 0), new Vector3(0, 0, 0), new Vector3(0, c0, 1));
       }
     }
     for (int i = 0; i < 8; ++i) {
@@ -138,7 +138,7 @@ public class WaterModel {
       for (int j = 0; j < 8; ++j) {
         double c2 = height[j];
         eastt[i][j] =
-            new Triangle(new Vector3(1, c2, 0), new Vector3(1, c1, 1), new Vector3(1, 0, 0));
+          new Triangle(new Vector3(1, c2, 0), new Vector3(1, c1, 1), new Vector3(1, 0, 0));
       }
     }
     for (int i = 0; i < 8; ++i) {
@@ -150,26 +150,26 @@ public class WaterModel {
       for (int j = 0; j < 8; ++j) {
         double c3 = height[j];
         northt[i][j] =
-            new Triangle(new Vector3(0, c3, 0), new Vector3(1, c2, 0), new Vector3(0, 0, 0));
+          new Triangle(new Vector3(0, c3, 0), new Vector3(1, c2, 0), new Vector3(0, 0, 0));
       }
     }
     for (int i = 0; i < 8; ++i) {
       double c2 = height[i];
       northb[i] =
-          new Triangle(new Vector3(1, 0, 0), new Vector3(0, 0, 0), new Vector3(1, c2, 0));
+        new Triangle(new Vector3(1, 0, 0), new Vector3(0, 0, 0), new Vector3(1, c2, 0));
     }
     for (int i = 0; i < 8; ++i) {
       double c0 = height[i];
       for (int j = 0; j < 8; ++j) {
         double c1 = height[j];
         southt[i][j] =
-            new Triangle(new Vector3(0, c0, 1), new Vector3(0, 0, 1), new Vector3(1, c1, 1));
+          new Triangle(new Vector3(0, c0, 1), new Vector3(0, 0, 1), new Vector3(1, c1, 1));
       }
     }
     for (int i = 0; i < 8; ++i) {
       double c1 = height[i];
       southb[i] =
-          new Triangle(new Vector3(1, 0, 1), new Vector3(1, c1, 1), new Vector3(0, 0, 1));
+        new Triangle(new Vector3(1, 0, 1), new Vector3(1, c1, 1), new Vector3(0, 0, 1));
     }
   }
 
@@ -298,8 +298,13 @@ public class WaterModel {
     return hit;
   }
 
+  public static final double waterPixelization = 32.0;
+
   public static boolean intersectTop(Ray ray) {
     ray.t = Double.POSITIVE_INFINITY;
+//    double x = ((long) (ray.o.x * waterPixelization)) / waterPixelization;
+//    double z = ((long) (ray.o.z * waterPixelization)) / waterPixelization;
+//    ray.o.set(x, ray.o.y, z);
 
     int data = ray.getCurrentData();
 
@@ -337,18 +342,27 @@ public class WaterModel {
    */
   public static void doWaterDisplacement(Ray ray) {
     int w = (1 << 4);
+
     double x = ray.o.x / w - QuickMath.floor(ray.o.x / w);
     double z = ray.o.z / w - QuickMath.floor(ray.o.z / w);
+
+    x = ((long) (x * waterPixelization)) / waterPixelization;
+    z = ((long) (z * waterPixelization)) / waterPixelization;
+
     int u = (int) (x * normalMapW - Ray.EPSILON);
     int v = (int) ((1 - z) * normalMapW - Ray.EPSILON);
-    ray.n.set(normalMap[(u*normalMapW + v) * 2], .15f, normalMap[(u*normalMapW + v) * 2 + 1]);
+    ray.n.set(normalMap[(u * normalMapW + v) * 2], .15f, normalMap[(u * normalMapW + v) * 2 + 1]);
     w = (1 << 1);
     x = ray.o.x / w - QuickMath.floor(ray.o.x / w);
     z = ray.o.z / w - QuickMath.floor(ray.o.z / w);
+
+    x = ((long) (x * waterPixelization)) / waterPixelization;
+    z = ((long) (z * waterPixelization)) / waterPixelization;
+
     u = (int) (x * normalMapW - Ray.EPSILON);
     v = (int) ((1 - z) * normalMapW - Ray.EPSILON);
-    ray.n.x += normalMap[(u*normalMapW + v) * 2] / 2;
-    ray.n.z += normalMap[(u*normalMapW + v) * 2 + 1] / 2;
+    ray.n.x += normalMap[(u * normalMapW + v) * 2] / 2;
+    ray.n.z += normalMap[(u * normalMapW + v) * 2 + 1] / 2;
     ray.n.normalize();
   }
 }
