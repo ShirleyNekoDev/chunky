@@ -73,9 +73,14 @@ public class Head extends MinecraftBlockTranslucent {
   @Override
   public Entity toBlockEntity(Vector3 position, CompoundTag entityTag) {
     if (type == Kind.PLAYER) {
-      String textureUrl = getTextureUrl(entityTag);
-      return textureUrl != null ? new HeadEntity(position, textureUrl, rotation, 1)
-          : new SkullEntity(position, type, rotation, 1);
+      if(loadPlayerSkins) {
+        String textureUrl = getTextureUrl(entityTag);
+        return textureUrl != null
+          ? new HeadEntity(position, textureUrl, rotation, 1)
+          : new SkullEntity(position, Kind.PLAYER, rotation, 1);
+      } else {
+          return new SkullEntity(position, Kind.PLAYER, rotation, 1);
+      }
     } else {
       return null;
     }
