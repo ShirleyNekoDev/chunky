@@ -193,6 +193,11 @@ public class PathTracer implements RayTracer {
 
             if (scene.sunEnabled) {
               reflected.set(ray);
+              double shadowPixelization = 16.0;
+              double x = ((long) (reflected.o.x * shadowPixelization)) / shadowPixelization;
+              double y = ((long) (reflected.o.y * shadowPixelization)) / shadowPixelization;
+              double z = ((long) (reflected.o.z * shadowPixelization)) / shadowPixelization;
+              reflected.o.set(x, y, z);
               scene.sun.getRandomSunDirection(reflected, random);
 
               double directLightR = 0;
