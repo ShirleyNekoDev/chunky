@@ -77,7 +77,7 @@ public class EntitiesTab extends ScrollPane implements RenderControlsTab, Initia
       this.entity = entity;
 
       if (entity instanceof PlayerEntity) {
-        JsonObject profile = scene.getPlayerProfile((PlayerEntity) entity);
+        JsonObject profile = scene.sceneEntities.getPlayerProfile((PlayerEntity) entity);
         name = getName(profile);
         kind = "Player";
       } else {
@@ -153,7 +153,7 @@ public class EntitiesTab extends ScrollPane implements RenderControlsTab, Initia
   public void update(Scene scene) {
     // TODO: it might be better to always just rebuild the whole table.
     Collection<EntityData> missing = new HashSet<>(entityTable.getItems());
-    for (Entity entity : scene.getActors()) {
+    for (Entity entity : scene.sceneEntities.getActors()) {
       EntityData data = new EntityData(entity, scene);
       if (!entityTable.getItems().contains(data)) {
         entityTable.getItems().add(data);
@@ -493,7 +493,7 @@ public class EntitiesTab extends ScrollPane implements RenderControlsTab, Initia
   public void initialize(URL location, ResourceBundle resources) {
     add.setTooltip(new Tooltip("Add a player at the target position."));
     add.setOnAction(e -> {
-      Collection<Entity> entities = scene.getActors();
+      Collection<Entity> entities = scene.sceneEntities.getActors();
       Set<String> ids = new HashSet<>();
       for (Entity entity : entities) {
         if (entity instanceof PlayerEntity) {
@@ -517,14 +517,14 @@ public class EntitiesTab extends ScrollPane implements RenderControlsTab, Initia
         }
       });
       player.randomPoseAndLook();
-      scene.addPlayer(player);
+      scene.sceneEntities.addPlayer(player);
       EntityData data = new EntityData(player, scene);
       entityTable.getItems().add(data);
       entityTable.getSelectionModel().select(data);
     });
     delete.setTooltip(new Tooltip("Delete the selected entity."));
     delete.setOnAction(e -> withEntity(entity -> {
-      scene.removeEntity(entity);
+      scene.sceneEntities.removeEntity(entity);
       update(scene);
     }));
     // TODO: remove or update the pose editing dialog.

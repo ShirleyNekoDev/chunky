@@ -51,14 +51,7 @@ import se.llbit.chunky.block.*;
 import se.llbit.chunky.block.legacy.LegacyBlocksFinalizer;
 import se.llbit.chunky.chunk.BlockPalette;
 import se.llbit.chunky.chunk.ChunkData;
-import se.llbit.chunky.chunk.GenericChunkData;
-import se.llbit.chunky.chunk.SimpleChunkData;
-import se.llbit.chunky.entity.ArmorStand;
 import se.llbit.chunky.entity.Entity;
-import se.llbit.chunky.entity.Lectern;
-import se.llbit.chunky.entity.PaintingEntity;
-import se.llbit.chunky.entity.PlayerEntity;
-import se.llbit.chunky.entity.Poseable;
 import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.plugin.PluginApi;
 import se.llbit.chunky.renderer.*;
@@ -88,7 +81,6 @@ import se.llbit.json.JsonParser;
 import se.llbit.json.JsonValue;
 import se.llbit.json.PrettyPrinter;
 import se.llbit.log.Log;
-import se.llbit.math.bvh.BVH;
 import se.llbit.math.Grid;
 import se.llbit.math.Octree;
 import se.llbit.math.PackedOctree;
@@ -97,15 +89,12 @@ import se.llbit.math.Ray;
 import se.llbit.math.Vector3;
 import se.llbit.math.Vector3i;
 import se.llbit.nbt.CompoundTag;
-import se.llbit.nbt.ListTag;
 import se.llbit.nbt.Tag;
 import se.llbit.util.*;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.*;
-import se.llbit.util.mojangapi.MojangApi;
-import se.llbit.util.mojangapi.PlayerSkin;
 
 /**
  * Encapsulates scene and render state.
@@ -251,7 +240,6 @@ public class Scene implements JsonSerializable, Refreshable {
 
   protected boolean biomeColors = true;
   protected boolean transparentSky = false;
-  protected boolean renderActors = true;
   protected Collection<ChunkPosition> chunks = new ArrayList<>();
   protected JsonObject cameraPresets = new JsonObject();
   /**
@@ -282,30 +270,16 @@ public class Scene implements JsonSerializable, Refreshable {
   private Octree worldOctree;
   private Octree waterOctree;
 
-  /**
-   * Entities in the scene.
-   */
-  private ArrayList<Entity> entities = new ArrayList<>();
-
-  /**
-   * Poseable entities in the scene.
-   */
-  private ArrayList<Entity> actors = new ArrayList<>();
-
-  /** Poseable entities in the scene. */
-  private Map<PlayerEntity, JsonObject> profiles = new HashMap<>();
-
   /** Material properties for this scene. */
   public Map<String, JsonValue> materials = new HashMap<>();
+
+  public SceneEntities sceneEntities = new SceneEntities(this);
 
   /** Lower Y clip plane. */
   public int yClipMin = PersistentSettings.getYClipMin();
 
   /** Upper Y clip plane. */
   public int yClipMax = PersistentSettings.getYClipMax();
-
-  private BVH bvh = BVH.EMPTY;
-  private BVH actorBvh = BVH.EMPTY;
 
   /**
    * Current time in seconds. Adjusts animated blocks like fire.
@@ -353,11 +327,6 @@ public class Scene implements JsonSerializable, Refreshable {
    * The octree implementation to use
    */
   private String octreeImplementation = PersistentSettings.getOctreeImplementation();
-
-  /**
-   * The BVH implementation to use
-   */
-  private String bvhImplementation = PersistentSettings.getBvhMethod();
 
   /**
    * Additional data that is associated with a scene, this can be used by plugins
@@ -445,14 +414,7 @@ public class Scene implements JsonSerializable, Refreshable {
       palette = other.palette;
       worldOctree = other.worldOctree;
       waterOctree = other.waterOctree;
-      entities = other.entities;
-      actors.clear();
-      actors.addAll(other.actors); // Create a copy so that entity changes can be reset.
-      actors.trimToSize();
-      profiles = other.profiles;
-      bvh = other.bvh;
-      actorBvh = other.actorBvh;
-      renderActors = other.renderActors;
+      sceneEntities.copyState(other.sceneEntities);
       grassTexture = other.grassTexture;
       foliageTexture = other.foliageTexture;
       waterTexture = other.waterTexture;
@@ -515,7 +477,6 @@ public class Scene implements JsonSerializable, Refreshable {
     }
 
     octreeImplementation = other.octreeImplementation;
-    bvhImplementation = other.bvhImplementation;
 
     animationTime = other.animationTime;
 
@@ -733,13 +694,8 @@ public class Scene implements JsonSerializable, Refreshable {
    */
   public boolean intersect(Ray ray) {
     boolean hit = false;
-    if (bvh.closestIntersection(ray)) {
+    if(sceneEntities.closestIntersection(ray)) {
       hit = true;
-    }
-    if (renderActors) {
-      if (actorBvh.closestIntersection(ray)) {
-        hit = true;
-      }
     }
     if (worldIntersection(ray)) {
       hit = true;
@@ -890,43 +846,7 @@ public class Scene implements JsonSerializable, Refreshable {
       }
     }
 
-    try (TaskTracker.Task task = taskTracker.task("(2/6) Loading entities")) {
-      entities.clear();
-      if (actors.isEmpty() && PersistentSettings.getLoadPlayers()) {
-        // We don't load actor entities if some already exists. Loading actor entities
-        // risks resetting posed actors when reloading chunks for an existing scene.
-        actors.clear();
-        profiles = new HashMap<>();
-        Collection<PlayerEntity> players = world.playerEntities();
-        int done = 1;
-        int target = players.size();
-        for (PlayerEntity entity : players) {
-          entity.randomPose();
-          task.update(target, done);
-          done += 1;
-          JsonObject profile;
-          try {
-            profile = MojangApi.fetchProfile(entity.uuid);
-            PlayerSkin skin = MojangApi.getSkinFromProfile(profile);
-            if (skin != null) {
-              String skinUrl = skin.getUrl();
-              if (skinUrl != null) {
-                entity.skin = MojangApi.downloadSkin(skinUrl).getAbsolutePath();
-              }
-              entity.model = skin.getModel();
-            }
-          } catch (IOException e) {
-            Log.error(e);
-            profile = new JsonObject();
-          }
-          profiles.put(entity, profile);
-          actors.add(entity);
-        }
-      }
-
-      entities.trimToSize();
-      actors.trimToSize();
-    }
+    sceneEntities.loadPlayers(taskTracker, world);
 
     Set<ChunkPosition> nonEmptyChunks = new HashSet<>();
     Set<ChunkPosition> legacyChunks = new HashSet<>();
@@ -1014,29 +934,7 @@ public class Scene implements JsonSerializable, Refreshable {
           }
         }
 
-        // Load entities from the chunk:
-        for (CompoundTag tag : chunkData.getEntities()) {
-          Tag posTag = tag.get("Pos");
-          if (posTag.isList()) {
-            ListTag pos = posTag.asList();
-            double x = pos.get(0).doubleValue();
-            double y = pos.get(1).doubleValue();
-            double z = pos.get(2).doubleValue();
-
-            if (y >= yClipMin && y < yClipMax) {
-              String id = tag.get("id").stringValue("");
-              if (id.equals("minecraft:painting") || id.equals("Painting")) {
-                // Before 1.12 paintings had id=Painting.
-                // After 1.12 paintings had id=minecraft:painting.
-                float yaw = tag.get("Rotation").get(0).floatValue();
-                entities.add(
-                    new PaintingEntity(new Vector3(x, y, z), tag.get("Motive").stringValue(), yaw));
-              } else if (id.equals("minecraft:armor_stand")) {
-                actors.add(new ArmorStand(new Vector3(x, y, z), tag));
-              }
-            }
-          }
-        }
+        sceneEntities.loadEntities(taskTracker, chunkData, yClipMin, yClipMax);
 
         int yCubeMin = yMin / 16;
         int yCubeMax = (yMax+15) / 16;
@@ -1075,30 +973,7 @@ public class Scene implements JsonSerializable, Refreshable {
                   if(block.isEntity()) {
                     Vector3 position = new Vector3(cx + cp.x * 16, y, cz + cp.z * 16);
                     Entity entity = block.toEntity(position);
-
-                    if(entity instanceof Poseable && !(entity instanceof Lectern && !((Lectern) entity).hasBook())) {
-                      // don't add the actor again if it was already loaded from json
-                      if(actors.stream().noneMatch(actor -> {
-                        if(actor.getClass().equals(entity.getClass())) {
-                          Vector3 distance = new Vector3(actor.position);
-                          distance.sub(entity.position);
-                          return distance.lengthSquared() < Ray.EPSILON;
-                        }
-                        return false;
-                      })) {
-                        actors.add(entity);
-                      }
-                    } else {
-                      entities.add(entity);
-                      if(emitterGrid != null) {
-                        for(Grid.EmitterPosition emitterPos : entity.getEmitterPosition()) {
-                          emitterPos.x -= origin.x;
-                          emitterPos.y -= origin.y;
-                          emitterPos.z -= origin.z;
-                          emitterGrid.addEmitter(emitterPos);
-                        }
-                      }
-                    }
+                    sceneEntities.addBlockEntity(entity);
 
                     if(!block.isBlockWithEntity()) {
                       if(block.waterlogged) {
@@ -1270,41 +1145,8 @@ public class Scene implements JsonSerializable, Refreshable {
               if (blockEntity == null) {
                 continue;
               }
-              if (blockEntity instanceof Poseable) {
-                // don't add the actor again if it was already loaded from json
-                if (actors.stream().noneMatch(actor -> {
-                  if (actor.getClass().equals(blockEntity.getClass())) {
-                    Vector3 distance = new Vector3(actor.position);
-                    distance.sub(blockEntity.position);
-                    return distance.lengthSquared() < Ray.EPSILON;
-                  }
-                  return false;
-                })) {
-                  actors.add(blockEntity);
-                }
-              } else {
-                entities.add(blockEntity);
-                if(emitterGrid != null) {
-                  for(Grid.EmitterPosition emitterPos : blockEntity.getEmitterPosition()) {
-                    emitterPos.x -= origin.x;
-                    emitterPos.y -= origin.y;
-                    emitterPos.z -= origin.z;
-                    emitterGrid.addEmitter(emitterPos);
-                  }
-                }
-              }
+              sceneEntities.addBlockEntity2(blockEntity);
             }
-            /*
-            switch (block) {
-              case Block.HEAD_ID:
-                entities.add(new SkullEntity(position, entityTag, metadata));
-                break;
-              case Block.WALL_BANNER_ID: {
-                entities.add(new WallBanner(position, metadata, entityTag));
-                break;
-              }
-            }
-            */
           }
         }
 
@@ -1318,8 +1160,7 @@ public class Scene implements JsonSerializable, Refreshable {
       executor.shutdown();
     }
 
-    entities.trimToSize();
-    actors.trimToSize();
+    sceneEntities.trimToSize();
     palette.unsynchronize();
 
     grassTexture = new WorldTexture();
@@ -1400,13 +1241,7 @@ public class Scene implements JsonSerializable, Refreshable {
       waterTexture.compact();
     }
 
-    for (Entity entity : actors) {
-      entity.loadDataFromOctree(worldOctree, palette, origin);
-    }
-
-    for (Entity entity : entities) {
-      entity.loadDataFromOctree(worldOctree, palette, origin);
-    }
+    sceneEntities.loadDataFromOctree(worldOctree);
 
     if (emitterGrid != null)
       emitterGrid.prepare();
@@ -1414,32 +1249,22 @@ public class Scene implements JsonSerializable, Refreshable {
     chunks = loadedChunks;
     camera.setWorldSize(1 << worldOctree.getDepth());
     try (TaskTracker.Task task = taskTracker.task("(5/6) Building world BVH")) {
-      buildBvh(task);
+      sceneEntities.buildBvh(task);
     }
     try (TaskTracker.Task task = taskTracker.task("(6/6) Building actor BVH")) {
-      buildActorBvh(task);
+      sceneEntities.buildActorBvh(task);
     }
     Log.info(String.format("Loaded %d chunks", numChunks));
 
     isLoading = false;
   }
 
-  private void buildBvh(TaskTracker.Task task) {
-    Vector3 worldOffset = new Vector3(-origin.x, -origin.y, -origin.z);
-    bvh = BVH.Factory.create(bvhImplementation, entities, worldOffset, task);
-  }
-
-  private void buildActorBvh(TaskTracker.Task task) {
-    Vector3 worldOffset = new Vector3(-origin.x, -origin.y, -origin.z);
-    actorBvh = BVH.Factory.create(bvhImplementation, actors, worldOffset, task);
-  }
-
   /**
    * Rebuild the actors and the other blocks bounding volume hierarchy.
    */
   public void rebuildBvh() {
-    buildBvh(TaskTracker.Task.NONE);
-    buildActorBvh(TaskTracker.Task.NONE);
+    sceneEntities.buildBvh(TaskTracker.Task.NONE);
+    sceneEntities.buildActorBvh(TaskTracker.Task.NONE);
     refresh();
   }
 
@@ -1447,7 +1272,7 @@ public class Scene implements JsonSerializable, Refreshable {
    * Rebuild the actors bounding volume hierarchy.
    */
   public void rebuildActorBvh() {
-    buildActorBvh(TaskTracker.Task.NONE);
+    sceneEntities.buildActorBvh(TaskTracker.Task.NONE);
     refresh();
   }
 
@@ -1629,11 +1454,8 @@ public class Scene implements JsonSerializable, Refreshable {
    * Move the camera to the player position, if available.
    */
   public void moveCameraToPlayer() {
-    for (Entity entity : actors) {
-      if (entity instanceof PlayerEntity) {
-        camera.moveToPlayer((PlayerEntity) entity);
-      }
-    }
+    sceneEntities.findAnyPlayer()
+      .ifPresent(camera::moveToPlayer);
   }
 
   /**
@@ -2198,10 +2020,10 @@ public class Scene implements JsonSerializable, Refreshable {
         camera.setWorldSize(1 << worldOctree.getDepth());
 
         try (TaskTracker.Task bvhTask = taskTracker.task("(2/3) Building world BVH")) {
-          buildBvh(bvhTask);
+          sceneEntities.buildBvh(bvhTask);
         }
         try (TaskTracker.Task bvhTask = taskTracker.task("(3/3) Building actor BVH")) {
-          buildActorBvh(bvhTask);
+          sceneEntities.buildActorBvh(bvhTask);
         }
 
         return true;
@@ -2602,7 +2424,6 @@ public class Scene implements JsonSerializable, Refreshable {
     json.add("waterWorldHeight", waterPlaneHeight);
     json.add("waterWorldHeightOffsetEnabled", waterPlaneOffsetEnabled);
     json.add("waterWorldClipEnabled", waterPlaneChunkClip);
-    json.add("renderActors", renderActors);
 
     if (!worldPath.isEmpty()) {
       // Save world info.
@@ -2630,22 +2451,7 @@ public class Scene implements JsonSerializable, Refreshable {
     // TODO: add regionList to compress the scene description size.
     json.add("chunkList", chunkList);
 
-    JsonArray entityArray = new JsonArray();
-    for (Entity entity : entities) {
-      entityArray.add(entity.toJson());
-    }
-    if (!entityArray.isEmpty()) {
-      json.add("entities", entityArray);
-    }
-    JsonArray actorArray = new JsonArray();
-    for (Entity entity : actors) {
-      actorArray.add(entity.toJson());
-    }
-    if (!actorArray.isEmpty()) {
-      json.add("actors", actorArray);
-    }
     json.add("octreeImplementation", octreeImplementation);
-    json.add("bvhImplementation", bvhImplementation);
     json.add("emitterSamplingStrategy", emitterSamplingStrategy.name());
     json.add("preventNormalEmitterWithSampling", preventNormalEmitterWithSampling);
 
@@ -2655,6 +2461,8 @@ public class Scene implements JsonSerializable, Refreshable {
     json.add("previewRenderer", previewRenderer);
 
     json.add("additionalData", additionalData);
+
+    sceneEntities.writeToJson(json);
 
     return json;
   }
@@ -2681,48 +2489,12 @@ public class Scene implements JsonSerializable, Refreshable {
     name = json.get("name").stringValue("default");
   }
 
-  public Collection<Entity> getEntities() {
-    return entities;
-  }
-
-  public Collection<Entity> getActors() {
-    return actors;
-  }
-
-  public JsonObject getPlayerProfile(PlayerEntity entity) {
-    if (profiles.containsKey(entity)) {
-      return profiles.get(entity);
-    } else {
-      return new JsonObject();
-    }
-  }
-
-  public void removeEntity(Entity player) {
-    if (player instanceof PlayerEntity) {
-      profiles.remove(player);
-    }
-    actors.remove(player);
-    rebuildActorBvh();
-  }
-
-  public void addPlayer(PlayerEntity player) {
-    if (!actors.contains(player)) {
-      profiles.put(player, new JsonObject());
-      actors.add(player);
-      rebuildActorBvh();
-    } else {
-      Log.warn("Failed to add player: entity already exists (" + player + ")");
-    }
-    actors.trimToSize();
-  }
-
   /**
    * Clears the scene, preparing to load fresh chunks.
    */
   public void clear() {
     cameraPresets = new JsonObject();
-    entities.clear();
-    actors.clear();
+    sceneEntities.clear();
   }
 
   /** Create a backup of a scene file. */
@@ -2900,7 +2672,6 @@ public class Scene implements JsonSerializable, Refreshable {
       waterPlaneChunkClip = json.get("waterWorldClipEnabled").boolValue(waterPlaneChunkClip);
     }
 
-    renderActors = json.get("renderActors").boolValue(renderActors);
     materials = json.get("materials").object().copy().toMap();
 
     // Load world info.
@@ -2944,33 +2715,9 @@ public class Scene implements JsonSerializable, Refreshable {
       }
     }
 
-    if (json.get("entities").isArray() || json.get("actors").isArray()) {
-      entities.clear();
-      actors.clear();
-      // Previously poseable entities were stored in the entities array
-      // rather than the actors array. In future versions only the actors
-      // array should contain poseable entities.
-      for (JsonValue element : json.get("entities").array()) {
-        Entity entity = Entity.fromJson(element.object());
-        if (entity != null) {
-          if (entity instanceof PlayerEntity) {
-            actors.add(entity);
-          } else {
-            entities.add(entity);
-          }
-        }
-      }
-      for (JsonValue element : json.get("actors").array()) {
-        Entity entity = Entity.fromJson(element.object());
-        actors.add(entity);
-      }
-    }
-
-    actors.trimToSize();
-    entities.trimToSize();
+    sceneEntities.trimToSize();
 
     octreeImplementation = json.get("octreeImplementation").asString(PersistentSettings.getOctreeImplementation());
-    bvhImplementation = json.get("bvhImplementation").asString(PersistentSettings.getBvhMethod());
 
     emitterSamplingStrategy = EmitterSamplingStrategy.valueOf(json.get("emitterSamplingStrategy").asString("NONE"));
     preventNormalEmitterWithSampling = json.get("preventNormalEmitterWithSampling").asBoolean(PersistentSettings.getPreventNormalEmitterWithSampling());
@@ -2981,6 +2728,8 @@ public class Scene implements JsonSerializable, Refreshable {
     previewRenderer = json.get("previewRenderer").asString(previewRenderer);
 
     additionalData = json.get("additionalData").object();
+
+    sceneEntities.loadFromJson(json);
   }
 
   /**
@@ -3247,14 +2996,6 @@ public class Scene implements JsonSerializable, Refreshable {
 
   public void setOctreeImplementation(String octreeImplementation) {
     this.octreeImplementation = octreeImplementation;
-  }
-
-  public String getBvhImplementation() {
-    return bvhImplementation;
-  }
-
-  public void setBvhImplementation(String bvhImplementation) {
-    this.bvhImplementation = bvhImplementation;
   }
 
   @PluginApi

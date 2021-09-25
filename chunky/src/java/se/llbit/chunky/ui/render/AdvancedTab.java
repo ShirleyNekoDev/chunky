@@ -187,7 +187,7 @@ public class AdvancedTab extends ScrollPane implements RenderControlsTab, Initia
     bvhMethod.getSelectionModel().selectedItemProperty()
             .addListener(((observable, oldValue, newValue) -> {
               PersistentSettings.setBvhMethod(newValue);
-              scene.setBvhImplementation(newValue);
+              scene.sceneEntities.setBvhImplementation(newValue);
             }));
     bvhMethod.setTooltip(new Tooltip(bvhMethodBuilder.toString()));
 
@@ -228,7 +228,7 @@ public class AdvancedTab extends ScrollPane implements RenderControlsTab, Initia
     cpuLoad.set(PersistentSettings.getCPULoad());
     rayDepth.set(scene.getRayDepth());
     octreeImplementation.getSelectionModel().select(scene.getOctreeImplementation());
-    bvhMethod.getSelectionModel().select(scene.getBvhImplementation());
+    bvhMethod.getSelectionModel().select(scene.sceneEntities.getBvhImplementation());
     gridSize.set(scene.getGridSize());
     preventNormalEmitterWithSampling.setSelected(scene.isPreventNormalEmitterWithSampling());
     animationTime.set(scene.getAnimationTime());
