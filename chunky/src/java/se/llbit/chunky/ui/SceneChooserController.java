@@ -17,18 +17,13 @@
  */
 package se.llbit.chunky.ui;
 
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableView;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import se.llbit.chunky.main.SceneHelper;
@@ -44,8 +39,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 public class SceneChooserController implements Initializable {
   @FXML private TableView<SceneListItem> sceneTbl;
@@ -68,6 +66,8 @@ public class SceneChooserController implements Initializable {
 
   @FXML private Button deleteBtn;
 
+  @FXML private TextField searchBox;
+
   private Stage stage;
 
   private ChunkyFxController controller;
@@ -75,35 +75,35 @@ public class SceneChooserController implements Initializable {
   @Override public void initialize(URL location, ResourceBundle resources) {
     exportBtn.setTooltip(new Tooltip("Exports the selected scene as a Zip archive."));
     exportBtn.setOnAction(e -> {
-      if (!sceneTbl.getSelectionModel().isEmpty()) {
+      if(!sceneTbl.getSelectionModel().isEmpty()) {
         SceneListItem scene = sceneTbl.getSelectionModel().getSelectedItem();
-        if (scene.sceneName.isEmpty()) {
+        if(scene.sceneName.isEmpty()) {
           Log.error("Can not export scene with unknown filename.");
           return;
         }
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Export Scene");
         fileChooser
-            .getExtensionFilters().add(new FileChooser.ExtensionFilter("Zip files", "*.zip"));
+                .getExtensionFilters().add(new FileChooser.ExtensionFilter("Zip files", "*.zip"));
         fileChooser.setInitialFileName(String.format("%s.zip", scene.sceneName));
         File targetFile = fileChooser.showSaveDialog(stage);
-        if (targetFile != null) {
+        if(targetFile != null) {
           Scene.exportToZip(scene.sceneName, targetFile);
         }
       }
     });
     deleteBtn.setOnAction(e -> {
-      if (!sceneTbl.getSelectionModel().isEmpty()) {
+      if(!sceneTbl.getSelectionModel().isEmpty()) {
         SceneListItem scene = sceneTbl.getSelectionModel().getSelectedItem();
-        if (scene.sceneName.isEmpty()) {
+        if(scene.sceneName.isEmpty()) {
           Log.error("Can not delete scene with unknown filename.");
           return;
         }
         Alert alert = Dialogs.createAlert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Delete Scene");
         alert.setContentText(String.format("Are you sure you want to delete the scene %s? "
-            + "All files for the scene, except snapshot images, will be deleted.", scene.sceneName));
-        if (alert.showAndWait().get() == ButtonType.OK) {
+                + "All files for the scene, except snapshot images, will be deleted.", scene.sceneName));
+        if(alert.showAndWait().get() == ButtonType.OK) {
           Scene.delete(scene.sceneName, scene.sceneDirectory);
           sceneTbl.getItems().remove(sceneTbl.getSelectionModel().getSelectedItem());
         }
@@ -111,7 +111,7 @@ public class SceneChooserController implements Initializable {
     });
     nameCol.setCellValueFactory(data -> {
       SceneListItem scene = data.getValue();
-      if (scene.isBackup) {
+      if(scene.isBackup) {
         return new ReadOnlyStringWrapper(scene.sceneName + " [backup]");
       } else {
         return new ReadOnlyStringWrapper(scene.sceneName);
@@ -133,6 +133,23 @@ public class SceneChooserController implements Initializable {
       SceneListItem scene = data.getValue();
       return new ReadOnlyStringWrapper(scene.renderTime);
     });
+
+    searchBox.setOnKeyTyped(evt -> {
+      String searchString = (searchBox.getText() + evt.getCharacter()).trim();
+      if(!searchString.isEmpty()) {
+        Platform.runLater(() -> {
+          Predicate<String> regex = Pattern.compile(Pattern.quote(searchString)).asPredicate();
+          List<SceneListItem> items = sceneTbl.getItems();
+          items.forEach(item -> {
+            item.isSearchMatch = regex.test(item.sceneName);
+          });
+          items.sort(Comparator.comparing(item -> !item.isSearchMatch));
+          sceneTbl.scrollTo(0);
+        });
+      } else {
+        sceneTbl.sort();
+      }
+    });
   }
 
   public void setStage(Stage stage) {
@@ -140,9 +157,9 @@ public class SceneChooserController implements Initializable {
     sceneTbl.setRowFactory(tbl -> {
       TableRow<SceneListItem> row = new TableRow<>();
       row.setOnMouseClicked(e -> {
-        if (e.getClickCount() == 2 && !row.isEmpty()) {
+        if(e.getClickCount() == 2 && !row.isEmpty()) {
           SceneListItem scene = row.getItem();
-          if (scene.sceneName.isEmpty()) {
+          if(scene.sceneName.isEmpty()) {
             Log.error("Can't load scene with unknown filename.");
           } else {
             controller.loadScene(scene.sceneName);
@@ -154,9 +171,9 @@ public class SceneChooserController implements Initializable {
       return row;
     });
     loadSceneBtn.setOnAction(e -> {
-      if (!sceneTbl.getSelectionModel().isEmpty()) {
+      if(!sceneTbl.getSelectionModel().isEmpty()) {
         SceneListItem scene = sceneTbl.getSelectionModel().getSelectedItem();
-        if (scene.sceneName.isEmpty()) {
+        if(scene.sceneName.isEmpty()) {
           Log.error("Can't load scene with unknown filename.");
         } else {
           controller.loadScene(scene.sceneName);
@@ -174,18 +191,18 @@ public class SceneChooserController implements Initializable {
     List<SceneListItem> scenes = new ArrayList<>();
     List<File> fileList = SceneHelper.getAvailableSceneFiles(sceneDir);
     Collections.sort(fileList);
-    for (File sceneFile : fileList) {
+    for(File sceneFile : fileList) {
 
-      try (JsonParser parser = new JsonParser(new FileInputStream(new File(sceneFile.getParentFile(), sceneFile.getName())))){
+      try(JsonParser parser = new JsonParser(new FileInputStream(new File(sceneFile.getParentFile(), sceneFile.getName())))) {
         SceneListItem item = new SceneListItem(parser.parse().object(), sceneFile);
         scenes.add(item);
 
-      } catch (IOException | JsonParser.SyntaxError e) {
+      } catch(IOException | JsonParser.SyntaxError e) {
         Log.warnf("Warning: could not load scene description: %s", sceneFile.getName());
       }
     }
     sceneTbl.setItems(FXCollections.observableArrayList(scenes));
-    if (!scenes.isEmpty()) {
+    if(!scenes.isEmpty()) {
       sceneTbl.getSelectionModel().select(0);
     }
   }
@@ -197,25 +214,26 @@ public class SceneChooserController implements Initializable {
   }
 
   private static class SceneListItem {
-
-    private final String sceneName;
-    private final int chunkSize;
-    private final String dimensions;
-    private final int sppCount;
-    private final String renderTime;
+    final String sceneName;
+    final int chunkSize;
+    final String dimensions;
+    final int sppCount;
+    final String renderTime;
     /**
      * What folder the scene is in
      */
-    private final File sceneDirectory;
+    final File sceneDirectory;
     /**
      * Whether this scene description file is a backup file and the original .json is missing.
      */
-    private final boolean isBackup;
+    final boolean isBackup;
 
-    private SceneListItem(JsonObject scene, File sceneFile) {
+    boolean isSearchMatch = true;
+
+    SceneListItem(JsonObject scene, File sceneFile) {
       sceneName = sceneFile.getName().substring(0, sceneFile.getName().length() - (
-          sceneFile.getName().endsWith(".backup") ? 7 + Scene.EXTENSION.length()
-              : Scene.EXTENSION.length()));
+              sceneFile.getName().endsWith(".backup") ? 7 + Scene.EXTENSION.length()
+                      : Scene.EXTENSION.length()));
       sceneDirectory = sceneFile.getParentFile();
       chunkSize = scene.get("chunkList").array().size();
       dimensions = String.format("%sx%s", scene.get("width").intValue(400), scene.get("height").intValue(400));
