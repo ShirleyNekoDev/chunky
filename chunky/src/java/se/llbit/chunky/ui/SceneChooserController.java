@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016 Jesper Öqvist <jesper@llbit.se>
+ * Copyright (c) 2016-2021 Chunky Contributors
  *
  * This file is part of Chunky.
  *
@@ -32,6 +33,7 @@ import se.llbit.fxutil.Dialogs;
 import se.llbit.json.JsonObject;
 import se.llbit.json.JsonParser;
 import se.llbit.log.Log;
+import se.llbit.util.FuzzyUnicodeMatcher;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,8 +44,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 public class SceneChooserController implements Initializable {
   @FXML private TableView<SceneListItem> sceneTbl;
@@ -138,12 +138,18 @@ public class SceneChooserController implements Initializable {
       String searchString = (searchBox.getText() + evt.getCharacter()).trim();
       if(!searchString.isEmpty()) {
         Platform.runLater(() -> {
-          Predicate<String> regex = Pattern.compile(Pattern.quote(searchString)).asPredicate();
+//          Predicate<String> regex = Pattern.compile(Pattern.quote(searchString)).asPredicate();
           List<SceneListItem> items = sceneTbl.getItems();
-          items.forEach(item -> {
-            item.isSearchMatch = regex.test(item.sceneName);
-          });
-          items.sort(Comparator.comparing(item -> !item.isSearchMatch));
+//          items.forEach(item -> {
+//            item.isSearchMatch = regex.test(item.sceneName);
+//          });
+//          items.sort(Comparator.comparing(item -> !item.isSearchMatch));
+          Comparator<SceneListItem> fuzzyMatcher = new FuzzyUnicodeMatcher<>(
+            items,
+            item -> item.sceneName,
+            searchString
+          );
+          items.sort(fuzzyMatcher);
           sceneTbl.scrollTo(0);
         });
       } else {
