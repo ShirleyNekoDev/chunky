@@ -91,6 +91,7 @@
       </Tab>
     </TabPane>
     <TabPane fx:id="mapTabs" prefWidth="300" maxHeight="1.7976931348623157E308" tabClosingPolicy="UNAVAILABLE">
+      <Tab fx:id="sceneInfoTab" text="Scene Info"/>
       <Tab fx:id="mapViewTab" text="Map View">
         <VBox maxHeight="1.7976931348623157E308" spacing="5.0">
           <padding>

@@ -113,6 +113,8 @@ public class ChunkyFxController
   private MapView mapView;
   protected ChunkSelectionTracker chunkSelection = new ChunkSelectionTracker();
 
+  private SceneInfoTabController sceneInfoTabController;
+
   @FXML private Canvas mapCanvas;
   @FXML private Canvas mapOverlay;
   @FXML private Label mapName;
@@ -129,6 +131,7 @@ public class ChunkyFxController
   @FXML private IntegerAdjuster yMax;
   @FXML private ToggleButton trackPlayerBtn;
   @FXML private ToggleButton trackCameraBtn;
+  @FXML private Tab sceneInfoTab;
   @FXML private Tab mapViewTab;
   @FXML private Tab chunksTab;
   @FXML private Tab optionsTab;
@@ -338,6 +341,7 @@ public class ChunkyFxController
         }
         updateTitle();
         refreshSettings();
+        refreshSceneStatistics();
         guiUpdateLatch.countDown();
         getChunkSelection().setSelection(chunky.getSceneManager().getScene().getChunks());
         World newWorld = scene.getWorld();
@@ -591,12 +595,21 @@ public class ChunkyFxController
       }
     });
 
+    try {
+      sceneInfoTabController = new SceneInfoTabController(sceneInfoTab);
+    } catch (IOException ex) {
+      throw new RuntimeException("Failed to load tab.", ex);
+    }
+    refreshSceneStatistics();
+
+    sceneInfoTab.setGraphic(new ImageView(Icon.wrench.fxImage()));
     mapViewTab.setGraphic(new ImageView(Icon.map.fxImage()));
     chunksTab.setGraphic(new ImageView(Icon.mapSelected.fxImage()));
     optionsTab.setGraphic(new ImageView(Icon.wrench.fxImage()));
     aboutTab.setGraphic(new ImageView(Icon.question.fxImage()));
 
     Collection<Tab> javaFxTabs = new ArrayList<>();
+    javaFxTabs.add(sceneInfoTab);
     javaFxTabs.add(mapViewTab);
     javaFxTabs.add(chunksTab);
     javaFxTabs.add(optionsTab);
@@ -871,6 +884,10 @@ public class ChunkyFxController
   public void refreshSettings() {
     targetSpp.set(scene.getTargetSpp());
     sceneControls.refreshSettings();
+  }
+
+  public void refreshSceneStatistics() {
+    sceneInfoTabController.refresh(scene);
   }
 
   private void updateTitle() {
