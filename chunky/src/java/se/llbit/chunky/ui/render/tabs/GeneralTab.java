@@ -36,7 +36,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.entity.ArmorStand;
-import se.llbit.chunky.entity.Book;
+import se.llbit.chunky.entity.subpart.Book;
 import se.llbit.chunky.entity.PaintingEntity;
 import se.llbit.chunky.entity.PlayerEntity;
 import se.llbit.chunky.map.WorldMapLoader;

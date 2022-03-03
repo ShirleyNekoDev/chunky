@@ -1,8 +1,7 @@
 package se.llbit.chunky.block;
 
-import se.llbit.chunky.entity.Book;
+import se.llbit.chunky.entity.subpart.Book;
 import se.llbit.chunky.entity.Entity;
-import se.llbit.chunky.model.BlockModel;
 import se.llbit.chunky.model.EnchantmentTableModel;
 import se.llbit.chunky.resources.Texture;
 import se.llbit.math.Vector3;

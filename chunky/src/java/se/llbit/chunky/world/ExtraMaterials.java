@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import se.llbit.chunky.block.Candle;
-import se.llbit.chunky.entity.Campfire;
+import se.llbit.chunky.entity.block.Campfire;
 import se.llbit.chunky.world.material.CloudMaterial;
 
 public class ExtraMaterials {

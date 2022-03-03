@@ -18,9 +18,9 @@
 package se.llbit.chunky.block;
 
 import se.llbit.chunky.entity.Entity;
-import se.llbit.chunky.entity.HeadEntity;
-import se.llbit.chunky.entity.SkullEntity;
-import se.llbit.chunky.entity.SkullEntity.Kind;
+import se.llbit.chunky.entity.block.HeadEntity;
+import se.llbit.chunky.entity.block.SkullEntity;
+import se.llbit.chunky.entity.block.SkullEntity.Kind;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.resources.EntityTexture;
 import se.llbit.log.Log;
@@ -75,7 +75,7 @@ public class Head extends MinecraftBlockTranslucent {
     if (type == Kind.PLAYER) {
       String textureUrl = getTextureUrl(entityTag);
       return textureUrl != null ? new HeadEntity(position, textureUrl, rotation, 1)
-          : new SkullEntity(position, type, rotation, 1);
+        : new SkullEntity(position, type, rotation, 1);
     } else {
       return null;
     }
@@ -87,7 +87,7 @@ public class Head extends MinecraftBlockTranslucent {
       ownerTag = entityTag.get("SkullOwner"); // used by player heads
     }
     String textureBase64 = ownerTag.get("Properties").get("textures").get(0)
-        .get("Value").stringValue();
+      .get("Value").stringValue();
     if (!textureBase64.isEmpty()) {
       try {
         return MojangApi.getSkinFromEncodedTextures(textureBase64).getUrl();

@@ -1,7 +1,7 @@
 package se.llbit.chunky.block;
 
 import se.llbit.chunky.entity.Entity;
-import se.llbit.chunky.entity.FlameParticles;
+import se.llbit.chunky.entity.particle.FlameParticles;
 import se.llbit.chunky.model.CandleModel;
 import se.llbit.chunky.resources.Texture;
 import se.llbit.chunky.world.Material;

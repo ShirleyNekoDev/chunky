@@ -2,7 +2,7 @@ package se.llbit.chunky.block;
 
 import java.util.Arrays;
 import java.util.Collection;
-import se.llbit.chunky.entity.SkullEntity;
+import se.llbit.chunky.entity.block.SkullEntity;
 import se.llbit.chunky.model.FlowerPotModel;
 import se.llbit.chunky.model.FlowerPotModel.Kind;
 import se.llbit.chunky.resources.EntityTexture;
@@ -2389,7 +2389,7 @@ public class MinecraftBlockProvider implements BlockProvider {
       case "campfire":
         return new Campfire(
             "campfire",
-            se.llbit.chunky.entity.Campfire.Kind.CAMPFIRE,
+            se.llbit.chunky.entity.block.Campfire.Kind.CAMPFIRE,
             BlockProvider.facing(tag),
             isLit(tag));
       case "cut_sandstone_slab":
@@ -2585,7 +2585,7 @@ public class MinecraftBlockProvider implements BlockProvider {
       case "soul_campfire":
         return new Campfire(
             "soul_campfire",
-            se.llbit.chunky.entity.Campfire.Kind.SOUL_CAMPFIRE,
+            se.llbit.chunky.entity.block.Campfire.Kind.SOUL_CAMPFIRE,
             BlockProvider.facing(tag),
             isLit(tag));
       case "polished_blackstone":

@@ -1,9 +1,10 @@
-package se.llbit.chunky.entity;
+package se.llbit.chunky.entity.particle;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.stream.StreamSupport;
 import se.llbit.chunky.block.Candle;
+import se.llbit.chunky.entity.Entity;
 import se.llbit.chunky.model.Model;
 import se.llbit.json.JsonArray;
 import se.llbit.json.JsonObject;

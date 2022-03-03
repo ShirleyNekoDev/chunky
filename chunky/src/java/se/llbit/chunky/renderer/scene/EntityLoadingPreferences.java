@@ -2,6 +2,7 @@ package se.llbit.chunky.renderer.scene;
 
 import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.entity.*;
+import se.llbit.chunky.entity.subpart.Book;
 import se.llbit.json.JsonMember;
 import se.llbit.json.JsonObject;
 import se.llbit.json.JsonValue;

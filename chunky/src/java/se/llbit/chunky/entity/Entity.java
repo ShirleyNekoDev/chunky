@@ -19,8 +19,22 @@ package se.llbit.chunky.entity;
 
 import java.util.Collection;
 
-import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.chunk.BlockPalette;
+import se.llbit.chunky.entity.block.Campfire;
+import se.llbit.chunky.entity.block.CoralFanEntity;
+import se.llbit.chunky.entity.block.HeadEntity;
+import se.llbit.chunky.entity.block.Lectern;
+import se.llbit.chunky.entity.block.LilyPadEntity;
+import se.llbit.chunky.entity.block.SignEntity;
+import se.llbit.chunky.entity.block.SkullEntity;
+import se.llbit.chunky.entity.block.SporeBlossom;
+import se.llbit.chunky.entity.block.StandingBanner;
+import se.llbit.chunky.entity.block.WallBanner;
+import se.llbit.chunky.entity.block.WallCoralFanEntity;
+import se.llbit.chunky.entity.block.WallSignEntity;
+import se.llbit.chunky.entity.subpart.BeaconBeam;
+import se.llbit.chunky.entity.subpart.Book;
+import se.llbit.chunky.entity.particle.FlameParticles;
 import se.llbit.json.JsonObject;
 import se.llbit.json.JsonValue;
 import se.llbit.math.Grid;

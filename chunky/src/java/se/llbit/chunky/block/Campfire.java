@@ -8,11 +8,11 @@ import se.llbit.math.Vector3;
 import se.llbit.nbt.CompoundTag;
 
 public class Campfire extends MinecraftBlockTranslucent {
-    private final se.llbit.chunky.entity.Campfire.Kind kind;
+    private final se.llbit.chunky.entity.block.Campfire.Kind kind;
     private final String facing;
     public final boolean isLit;
 
-    public Campfire(String name, se.llbit.chunky.entity.Campfire.Kind kind, String facing, boolean lit) {
+    public Campfire(String name, se.llbit.chunky.entity.block.Campfire.Kind kind, String facing, boolean lit) {
         super(name, Texture.campfireLog);
         invisible = true;
         opaque = false;
@@ -34,6 +34,6 @@ public class Campfire extends MinecraftBlockTranslucent {
 
     @Override
     public Entity toBlockEntity(Vector3 position, CompoundTag entityTag) {
-        return new se.llbit.chunky.entity.Campfire(this.kind, position, this.facing, this.isLit);
+        return new se.llbit.chunky.entity.block.Campfire(this.kind, position, this.facing, this.isLit);
     }
 }

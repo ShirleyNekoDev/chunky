@@ -18,9 +18,10 @@
  */
 package se.llbit.chunky.entity;
 
-import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.block.Head;
-import se.llbit.chunky.entity.SkullEntity.Kind;
+import se.llbit.chunky.entity.block.HeadEntity;
+import se.llbit.chunky.entity.block.SkullEntity;
+import se.llbit.chunky.entity.block.SkullEntity.Kind;
 import se.llbit.chunky.renderer.scene.PlayerModel;
 import se.llbit.chunky.resources.PlayerTexture;
 import se.llbit.chunky.resources.PlayerTexture.ExtendedUVMap;

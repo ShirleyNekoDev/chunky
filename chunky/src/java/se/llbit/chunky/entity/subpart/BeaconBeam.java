@@ -1,9 +1,11 @@
-package se.llbit.chunky.entity;
+package se.llbit.chunky.entity.subpart;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import se.llbit.chunky.block.Beacon;
 import se.llbit.chunky.block.Block;
 import se.llbit.chunky.chunk.BlockPalette;
+import se.llbit.chunky.entity.Entity;
+import se.llbit.chunky.entity.Poseable;
 import se.llbit.chunky.world.Material;
 import se.llbit.chunky.world.material.BeaconBeamMaterial;
 import se.llbit.json.JsonMember;

@@ -1,7 +1,7 @@
 package se.llbit.chunky.block;
 
 import se.llbit.chunky.entity.Entity;
-import se.llbit.chunky.entity.StandingBanner;
+import se.llbit.chunky.entity.block.StandingBanner;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.resources.Texture;
 import se.llbit.json.Json;
@@ -47,6 +47,6 @@ public class WallBanner extends MinecraftBlockTranslucent {
   @Override public Entity toBlockEntity(Vector3 position, CompoundTag entityTag) {
     JsonObject design = StandingBanner.parseDesign(entityTag);
     design.set("base", Json.of(color)); // Base color is not included in the entity tag in Minecraft 1.13+.
-    return new se.llbit.chunky.entity.WallBanner(position, facing, design);
+    return new se.llbit.chunky.entity.block.WallBanner(position, facing, design);
   }
 }

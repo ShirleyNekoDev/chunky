@@ -55,7 +55,7 @@ import se.llbit.chunky.chunk.EmptyChunkData;
 import se.llbit.chunky.chunk.biome.BiomeData;
 import se.llbit.chunky.entity.ArmorStand;
 import se.llbit.chunky.entity.Entity;
-import se.llbit.chunky.entity.Lectern;
+import se.llbit.chunky.entity.block.Lectern;
 import se.llbit.chunky.entity.PaintingEntity;
 import se.llbit.chunky.entity.PlayerEntity;
 import se.llbit.chunky.entity.Poseable;

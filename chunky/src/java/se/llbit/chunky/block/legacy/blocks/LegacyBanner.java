@@ -2,7 +2,7 @@ package se.llbit.chunky.block.legacy.blocks;
 
 import se.llbit.chunky.block.MinecraftBlockTranslucent;
 import se.llbit.chunky.entity.Entity;
-import se.llbit.chunky.entity.StandingBanner;
+import se.llbit.chunky.entity.block.StandingBanner;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.resources.Texture;
 import se.llbit.chunky.world.BlockData;

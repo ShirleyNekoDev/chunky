@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with Chunky.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.llbit.chunky.entity;
+package se.llbit.chunky.entity.block;
 
+import se.llbit.chunky.entity.Entity;
 import se.llbit.chunky.resources.EntityTexture;
 import se.llbit.chunky.resources.Texture;
 import se.llbit.chunky.world.Material;

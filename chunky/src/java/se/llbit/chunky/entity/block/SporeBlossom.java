@@ -1,6 +1,8 @@
-package se.llbit.chunky.entity;
+package se.llbit.chunky.entity.block;
 
 import java.util.Collection;
+
+import se.llbit.chunky.entity.Entity;
 import se.llbit.chunky.model.SporeBlossomModel;
 import se.llbit.json.JsonObject;
 import se.llbit.json.JsonValue;

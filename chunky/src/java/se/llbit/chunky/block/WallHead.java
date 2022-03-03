@@ -1,9 +1,9 @@
 package se.llbit.chunky.block;
 
 import se.llbit.chunky.entity.Entity;
-import se.llbit.chunky.entity.HeadEntity;
-import se.llbit.chunky.entity.SkullEntity;
-import se.llbit.chunky.entity.SkullEntity.Kind;
+import se.llbit.chunky.entity.block.HeadEntity;
+import se.llbit.chunky.entity.block.SkullEntity;
+import se.llbit.chunky.entity.block.SkullEntity.Kind;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.resources.EntityTexture;
 import se.llbit.math.Ray;

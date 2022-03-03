@@ -16,16 +16,21 @@
  * You should have received a copy of the GNU General Public License
  * along with Chunky.  If not, see <http://www.gnu.org/licenses/>.
  */
-package se.llbit.chunky.entity;
+package se.llbit.chunky.entity.block;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.WeakHashMap;
+
+import se.llbit.chunky.entity.Entity;
 import se.llbit.chunky.renderer.scene.PlayerModel;
+import se.llbit.chunky.resources.PlayerSkinCache;
 import se.llbit.chunky.resources.PlayerTexture;
 import se.llbit.chunky.resources.Texture;
 import se.llbit.chunky.resources.texturepack.PlayerTextureLoader;
@@ -39,16 +44,14 @@ import se.llbit.math.Vector3;
 import se.llbit.math.primitive.Box;
 import se.llbit.math.primitive.Primitive;
 import se.llbit.util.mojangapi.MojangApi;
+import se.llbit.util.mojangapi.PlayerSkin;
 
 /**
- * A mob head (skull) entity.
+ * A player head (skull) entity.
  *
  * @author Jesper Öqvist <jesper@llbit.se>
  */
 public class HeadEntity extends Entity {
-
-  private static final Map<String, PlayerTexture> textureCache = Collections
-      .synchronizedMap(new WeakHashMap<>());
 
   /**
    * The rotation of the skull when attached to a wall.
@@ -60,12 +63,9 @@ public class HeadEntity extends Entity {
    */
   private final int placement;
 
-  /**
-   * The URL of the skin that is used for this entity.
-   */
-  private final String skin;
+  private final PlayerSkin skin;
 
-  public HeadEntity(Vector3 position, String skin, int rotation, int placement) {
+  public HeadEntity(Vector3 position, PlayerSkin skin, int rotation, int placement) {
     super(position);
     this.skin = skin;
     this.rotation = rotation;
@@ -74,9 +74,13 @@ public class HeadEntity extends Entity {
 
   @Override
   public Collection<Primitive> primitives(Vector3 offset) {
-    PlayerTexture texture = Texture.steve;
-    if (skin != null && !skin.isEmpty()) {
-      texture = downloadSkin();
+    PlayerTexture texture;
+    if(skin != null && skin.getURI() != null) {
+      texture = PlayerSkinCache.INSTANCE
+        .getOrDownload(skin.getURI())
+        .orElse(Texture.steve);
+    } else {
+      texture = Texture.steve;
     }
 
     Collection<Primitive> faces = new LinkedList<>();
@@ -140,41 +144,6 @@ public class HeadEntity extends Entity {
     return faces;
   }
 
-  /**
-   * Download the skin or take it from the cache.
-   *
-   * @param skin The URL of the skin
-   * @return The downloaded/cached skin or the steve skin if the download failed
-   */
-  public static PlayerTexture downloadTexture(String skin) {
-    return textureCache.computeIfAbsent(skin, (skinUrl) -> {
-      PlayerTexture texture = new PlayerTexture();
-      PlayerTextureLoader loader = new PlayerTextureLoader(skinUrl, texture, PlayerModel.STEVE);
-      try {
-        File cacheFile = MojangApi.downloadSkin(skin);
-        try {
-          loader.loadFromFile(cacheFile);
-          return texture;
-        } catch (IOException | TextureFormatError  e) {
-          Log.warn("Failed to load skin downloaded from " + skinUrl, e);
-          cacheFile.delete();
-        }
-      } catch (IOException e) {
-        Log.warn("Failed to download skin from " + skinUrl, e);
-      }
-      return Texture.steve;
-    });
-  }
-
-  /**
-   * Download the skin or take it from the cache.
-   *
-   * @return The downloaded/cached skin or the steve skin if the download failed
-   */
-  private PlayerTexture downloadSkin() {
-    return downloadTexture(skin);
-  }
-
   @Override
   public JsonValue toJson() {
     JsonObject json = new JsonObject();
@@ -183,7 +152,7 @@ public class HeadEntity extends Entity {
     //json.add("type", type);
     json.add("rotation", rotation);
     json.add("placement", placement);
-    json.add("skin", skin);
+    json.add("skin", skin.getURI().toString());
     return json;
   }
 
@@ -193,8 +162,12 @@ public class HeadEntity extends Entity {
     //int type = json.get("type").intValue(0);
     int rotation = json.get("rotation").intValue(0);
     int placement = json.get("placement").intValue(0);
-    String skin = json.get("skin").stringValue("");
-    return new HeadEntity(position, skin, rotation, placement);
+    try {
+      URI skinURI = new URI(json.get("skin").stringValue(""));
+      return new HeadEntity(position, new PlayerSkin(skinURI, null), rotation, placement);
+    }catch (URISyntaxException ex) {
+      throw new IllegalStateException("Invalid player skin URI", ex);
+    }
   }
 
 

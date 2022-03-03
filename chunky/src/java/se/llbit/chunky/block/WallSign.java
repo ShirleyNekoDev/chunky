@@ -1,10 +1,9 @@
 package se.llbit.chunky.block;
 
 import se.llbit.chunky.entity.Entity;
-import se.llbit.chunky.entity.SignEntity;
-import se.llbit.chunky.entity.WallSignEntity;
+import se.llbit.chunky.entity.block.SignEntity;
+import se.llbit.chunky.entity.block.WallSignEntity;
 import se.llbit.chunky.renderer.scene.Scene;
-import se.llbit.chunky.resources.Texture;
 import se.llbit.math.Ray;
 import se.llbit.math.Vector3;
 import se.llbit.nbt.CompoundTag;
