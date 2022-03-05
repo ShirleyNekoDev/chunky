@@ -47,9 +47,6 @@ import se.llbit.chunky.entity.PlayerEntity;
 import se.llbit.chunky.entity.Poseable;
 import se.llbit.chunky.renderer.scene.PlayerModel;
 import se.llbit.chunky.renderer.scene.Scene;
-import se.llbit.chunky.ui.UILogReceiver;
-import se.llbit.chunky.ui.dialogs.DialogUtils;
-import se.llbit.chunky.ui.dialogs.ValidatingTextInputDialog;
 import se.llbit.chunky.ui.elements.AngleAdjuster;
 import se.llbit.chunky.ui.DoubleAdjuster;
 import se.llbit.chunky.ui.IntegerAdjuster;
@@ -58,6 +55,7 @@ import se.llbit.chunky.ui.controller.RenderControlsFxController;
 import se.llbit.chunky.ui.render.RenderControlsTab;
 import se.llbit.chunky.world.material.BeaconBeamMaterial;
 import se.llbit.fx.LuxColorPicker;
+import se.llbit.fxutil.dialogs.ValidatingTextInputDialogBuilder;
 import se.llbit.json.Json;
 import se.llbit.json.JsonArray;
 import se.llbit.json.JsonObject;
@@ -217,25 +215,15 @@ public class EntitiesTab extends ScrollPane implements RenderControlsTab, Initia
         });
         Button downloadSkin = new Button("Download skin...");
         downloadSkin.setOnAction(e -> {
-          TextInputDialog playerIdentifierInput = new ValidatingTextInputDialog(playerIdentifier -> {
-            try {
-              // TODO: refactor this (deduplicate code, check UUID format, trim input, better error handling)
-              JsonObject profile = MojangApi.fetchProfile(playerIdentifier); //Search by uuid
-              PlayerSkin skin = MojangApi.getSkinFromProfile(profile);
-              if(skin != null) //If it found a skin, pass it back to caller
-              {
-                downloadAndApplySkinForPlayer(
-                  skin,
-                  player,
-                  playerModel,
-                  skinField
-                );
-                return true;
-              } else { //Otherwise, search by Username
-                String uuid = MojangApi.usernameToUUID(playerIdentifier);
-                profile = MojangApi.fetchProfile(uuid);
-                skin = MojangApi.getSkinFromProfile(profile);
-                if(skin != null) {
+          new ValidatingTextInputDialogBuilder()
+            .setParentScene(getScene())
+            .setValidator(playerIdentifier -> {
+              try {
+                // TODO: refactor this (deduplicate code, check UUID format, trim input, better error handling)
+                JsonObject profile = MojangApi.fetchProfile(playerIdentifier); //Search by uuid
+                PlayerSkin skin = MojangApi.getSkinFromProfile(profile);
+                if(skin != null) //If it found a skin, pass it back to caller
+                {
                   downloadAndApplySkinForPlayer(
                     skin,
                     player,
@@ -243,20 +231,31 @@ public class EntitiesTab extends ScrollPane implements RenderControlsTab, Initia
                     skinField
                   );
                   return true;
-                } else { //If still not found, warn user.
-                  Log.warn("Could not find player with that identifier");
+                } else { //Otherwise, search by Username
+                  String uuid = MojangApi.usernameToUUID(playerIdentifier);
+                  profile = MojangApi.fetchProfile(uuid);
+                  skin = MojangApi.getSkinFromProfile(profile);
+                  if(skin != null) {
+                    downloadAndApplySkinForPlayer(
+                      skin,
+                      player,
+                      playerModel,
+                      skinField
+                    );
+                    return true;
+                  } else { //If still not found, warn user.
+                    Log.warn("Could not find player with that identifier");
+                  }
                 }
+              } catch (IOException ex) {
+                Log.warn("Could not download skin", ex);
               }
-            } catch (IOException ex) {
-              Log.warn("Could not download skin", ex);
-            }
-            return false;
-          });
-          playerIdentifierInput.setTitle("Input player identifier");
-          playerIdentifierInput.setHeaderText("Please enter the UUID or name of the player.");
-          playerIdentifierInput.setContentText("UUID / player name:");
-          DialogUtils.setupDialogDesign(playerIdentifierInput, getScene());
-          playerIdentifierInput.showAndWait();
+              return false;
+            })
+            .setTitle("Input player identifier")
+            .setHeaderText("Please enter the UUID or name of the player.")
+            .setContentText("UUID / player name:")
+            .showAndWait();
         });
         skinBox.getChildren().addAll(new Label("Skin:"), skinField, selectSkin, downloadSkin);
 

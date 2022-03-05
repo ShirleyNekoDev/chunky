@@ -39,7 +39,7 @@ import se.llbit.chunky.ui.DoubleAdjuster;
 import se.llbit.chunky.ui.controller.RenderControlsFxController;
 import se.llbit.chunky.ui.render.RenderControlsTab;
 import se.llbit.fx.LuxColorPicker;
-import se.llbit.fxutil.Dialogs;
+import se.llbit.fxutil.dialogs.Dialogs;
 import se.llbit.math.ColorUtil;
 import se.llbit.math.QuickMath;
 
@@ -117,14 +117,13 @@ public class LightingTab extends ScrollPane implements RenderControlsTab, Initia
         .addListener((observable, oldvalue, newvalue) -> {
           scene.setEmitterSamplingStrategy(newvalue);
           if (newvalue != EmitterSamplingStrategy.NONE && scene.getEmitterGrid() == null) {
-            Alert warning = Dialogs.createAlert(AlertType.CONFIRMATION);
-            warning.setContentText("The selected chunks need to be reloaded in order for emitter sampling to work.");
-            warning.getButtonTypes().setAll(
-              ButtonType.CANCEL,
-              new ButtonType("Reload chunks", ButtonData.FINISH));
-            warning.setTitle("Chunk reload required");
-            ButtonType result = warning.showAndWait().orElse(ButtonType.CANCEL);
-            if (result.getButtonData() == ButtonData.FINISH) {
+            if(
+              Dialogs
+                .buildConfirmationDialog("Reload chunks")
+                .setTitle("Chunk reload required")
+                .setContentText("The selected chunks need to be reloaded in order for emitter sampling to work.")
+                .showAndConfirm()
+            ) {
               controller.getRenderController().getSceneManager().reloadChunks();
             }
           }

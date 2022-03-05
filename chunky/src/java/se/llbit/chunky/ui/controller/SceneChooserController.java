@@ -30,7 +30,7 @@ import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.main.SceneHelper;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.ui.TableSortConfigSerializer;
-import se.llbit.fxutil.Dialogs;
+import se.llbit.fxutil.dialogs.Dialogs;
 import se.llbit.json.JsonObject;
 import se.llbit.json.JsonParser;
 import se.llbit.log.Log;
@@ -91,11 +91,16 @@ public class SceneChooserController implements Initializable {
           Log.error("Can not delete scene with unknown filename.");
           return;
         }
-        Alert alert = Dialogs.createAlert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Delete Scene");
-        alert.setContentText(String.format("Are you sure you want to delete the scene %s? "
-            + "All files for the scene, except snapshot images, will be deleted.", scene.sceneName));
-        if (alert.showAndWait().get() == ButtonType.OK) {
+        if(
+          Dialogs
+            .buildConfirmationDialog()
+            .setTitle("Delete Scene")
+            .setContentText(String.format(
+              "Are you sure you want to delete the scene %s? "
+              + "All files for the scene, except snapshot images, will be deleted.", scene.sceneName
+            ))
+            .showAndConfirm()
+        ) {
           Scene.delete(scene.sceneName, scene.sceneDirectory);
           sceneTbl.getItems().remove(sceneTbl.getSelectionModel().getSelectedItem());
         }

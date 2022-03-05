@@ -33,7 +33,7 @@ import se.llbit.chunky.resources.MinecraftFinder;
 import se.llbit.chunky.resources.TexturePackLoader;
 import se.llbit.chunky.ui.TableSortConfigSerializer;
 import se.llbit.chunky.world.World;
-import se.llbit.fxutil.Dialogs;
+import se.llbit.fxutil.dialogs.Dialogs;
 import se.llbit.json.JsonArray;
 import se.llbit.log.Log;
 
@@ -151,14 +151,14 @@ public class WorldChooserController implements Initializable {
     world.getResourcePack().ifPresent((worldResourcePack) -> {
       List<String> texturePacks = new ArrayList<>(TexturePackLoader.getTexturePacks());
       if (!texturePacks.contains(worldResourcePack.getAbsolutePath())) {
-        Alert loadTexturesConfirm = Dialogs.createAlert(Alert.AlertType.CONFIRMATION);
-        loadTexturesConfirm.getButtonTypes().clear();
-        loadTexturesConfirm.getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
-        loadTexturesConfirm.setTitle("Bundled resource pack");
-        loadTexturesConfirm.setContentText(
-                "The world \"" + world.levelName() + "\" contains a resource pack. Do you want to load it now?");
-        Dialogs.stayOnTop(loadTexturesConfirm);
-        if (loadTexturesConfirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.YES) {
+        if (
+          Dialogs.buildConfirmationDialog()
+            .setTitle("Bundled resource pack")
+            .setContentText(
+              "The world \"" + world.levelName() + "\" contains a resource pack. Do you want to load it now?"
+            )
+            .showAndConfirm()
+        ) {
           if (!texturePacks.contains(worldResourcePack.getAbsolutePath())) {
             texturePacks.add(0, worldResourcePack.getAbsolutePath());
             TexturePackLoader.loadTexturePacks(texturePacks.toArray(new String[0]), true);

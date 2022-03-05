@@ -53,7 +53,7 @@ import se.llbit.chunky.ui.render.RenderControlsTab;
 import se.llbit.chunky.world.EmptyWorld;
 import se.llbit.chunky.world.Icon;
 import se.llbit.chunky.world.World;
-import se.llbit.fxutil.Dialogs;
+import se.llbit.fxutil.dialogs.Dialogs;
 import se.llbit.json.JsonObject;
 import se.llbit.json.JsonParser;
 import se.llbit.log.Log;
@@ -197,10 +197,12 @@ public class GeneralTab extends ScrollPane implements RenderControlsTab, Initial
 
     restoreDefaults.setOnAction(
         event -> {
-          Alert alert = Dialogs.createAlert(AlertType.CONFIRMATION);
-          alert.setTitle("Restore default settings");
-          alert.setContentText("Do you really want to reset all scene settings?");
-          if (alert.showAndWait().get() == ButtonType.OK) {
+          if (
+            Dialogs.buildConfirmationDialog()
+              .setTitle("Restore default settings")
+              .setContentText("Do you really want to reset all scene settings?")
+              .showAndConfirm()
+          ) {
             scene.resetScene(scene.name, controller.getContext().getChunky().getSceneFactory());
             chunkyFxController.refreshSettings();
           }

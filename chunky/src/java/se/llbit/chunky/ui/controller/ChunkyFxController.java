@@ -44,12 +44,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -92,7 +90,6 @@ import se.llbit.chunky.ui.DoubleTextField;
 import se.llbit.chunky.ui.IntegerAdjuster;
 import se.llbit.chunky.ui.ProgressTracker;
 import se.llbit.chunky.ui.RenderCanvasFx;
-import se.llbit.chunky.ui.dialogs.DialogUtils;
 import se.llbit.chunky.ui.dialogs.ResourceLoadOrderEditor;
 import se.llbit.chunky.ui.dialogs.SceneChooser;
 import se.llbit.chunky.ui.UILogReceiver;
@@ -106,7 +103,7 @@ import se.llbit.chunky.world.EmptyWorld;
 import se.llbit.chunky.world.Icon;
 import se.llbit.chunky.world.World;
 import se.llbit.fx.ToolPane;
-import se.llbit.fxutil.Dialogs;
+import se.llbit.fxutil.dialogs.Dialogs;
 import se.llbit.fxutil.GroupedChangeListener;
 import se.llbit.log.Level;
 import se.llbit.log.Log;
@@ -357,14 +354,13 @@ public class ChunkyFxController
         if (newWorld != EmptyWorld.INSTANCE
           && mapLoader.getWorld() != EmptyWorld.INSTANCE
           && !mapLoader.getWorld().getWorldDirectory().equals(newWorld.getWorldDirectory())) {
-          Alert loadWorldConfirm = Dialogs.createAlert(AlertType.CONFIRMATION);
-          loadWorldConfirm.getButtonTypes().clear();
-          loadWorldConfirm.getButtonTypes().addAll(ButtonType.YES, ButtonType.NO);
-          loadWorldConfirm.setTitle("Load scene world");
-          loadWorldConfirm.setContentText(
-              "This scene shows a different world than the one that is currently loaded. Do you want to load the world of this scene?");
-          Dialogs.stayOnTop(loadWorldConfirm);
-          if (loadWorldConfirm.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.YES) {
+          if (
+            Dialogs.buildConfirmationDialog()
+              .setParentScene(mapCanvas.getScene())
+              .setTitle("Load scene world")
+              .setContentText("This scene shows a different world than the one that is currently loaded. Do you want to load the world of this scene?")
+              .showAndConfirm()
+          ) {
             mapLoader.loadWorld(newWorld.getWorldDirectory());
           }
         }
@@ -547,13 +543,16 @@ public class ChunkyFxController
     deleteChunksBtn.setTooltip(new Tooltip("Delete selected chunks."));
     deleteChunksBtn.setGraphic(new ImageView(Icon.clear.fxImage()));
     deleteChunksBtn.setOnAction(e -> {
-      Dialog<ButtonType> confirmationDialog = Dialogs.createSpecialApprovalConfirmation(
-        "Delete selected chunks",
-        "Confirm deleting the selected chunks",
-        "Do you really want to delete the selected chunks from the world?\nThis will remove the selected chunks from your disk and cannot be undone. Be sure to have a backup!",
-        "I do want to permanently delete the selected chunks"
-      );
-      if (confirmationDialog.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK) {
+      if (
+        Dialogs
+          .buildCheckApprovalConfirmationDialog()
+          .setParentScene(mapCanvas.getScene())
+          .setTitle("Delete selected chunks")
+          .setHeaderText("Confirm deleting the selected chunks")
+          .setContentText("Do you really want to delete the selected chunks from the world?\nThis will remove the selected chunks from your disk and cannot be undone. Be sure to have a backup!")
+          .setCheckBoxLabel("I do want to permanently delete the selected chunks")
+          .showAndConfirm()
+      ) {
         deleteSelectedChunks(ProgressTracker.NONE);
       }
     });
@@ -864,21 +863,21 @@ public class ChunkyFxController
   private void requestRenderReset() {
     if (resetConfirmMutex.compareAndSet(false, true)) {
       Platform.runLater(() -> {
-        Alert confirmReset = new Alert(
-          AlertType.CONFIRMATION,
-          "Something in the scene settings changed which requires a render reset, but the render has already made significant progress. " +
-            "\nDo you want to reset the render to apply the changes? " +
-            "\nYour current progress will be lost!",
-          new ButtonType("Reset", ButtonBar.ButtonData.YES),
-          ButtonType.CANCEL
-        );
-        confirmReset.setTitle("Reset render to apply setting changes?");
-        DialogUtils.setupDialogDesign(confirmReset, mapCanvas.getScene());
-
-        ButtonType resultAction = confirmReset
-          .showAndWait()
-          .orElse(ButtonType.CANCEL);
-        if (resultAction.getButtonData() == ButtonBar.ButtonData.YES) {
+        if (
+          Dialogs
+            .buildConfirmationDialog("Reset")
+            .setParentScene(mapCanvas.getScene())
+            .setTitle("Reset render to apply setting changes?")
+            .setContentText(
+              "Something in the scene settings changed which requires a render reset, but the render has already made significant progress. " +
+                "\nDo you want to reset the render to apply the changes? " +
+                "\nYour current progress will be lost!"
+            )
+            .showAndWait()
+            .orElse(ButtonType.CANCEL)
+            .getButtonData()
+          == ButtonBar.ButtonData.YES
+        ) {
           asyncSceneManager.applySceneChanges();
         } else {
           asyncSceneManager.discardSceneChanges();
@@ -972,11 +971,15 @@ public class ChunkyFxController
     File oldFormat = new File(PersistentSettings.getSceneDirectory(), sceneName + Scene.EXTENSION);
     File newFormat = new File(PersistentSettings.getSceneDirectory(), sceneName);
     if (oldFormat.exists() || newFormat.exists()) {
-      Alert alert = Dialogs.createAlert(Alert.AlertType.CONFIRMATION);
-      alert.setTitle("Overwrite existing scene");
-      alert.setContentText("A scene with that name already exists. This will overwrite the existing scene, are you sure you want to continue?");
-
-      if (alert.showAndWait().orElse(ButtonType.CANCEL) != ButtonType.OK) return;
+      if(
+        !Dialogs.buildConfirmationDialog()
+          .setParentScene(mapCanvas.getScene())
+          .setTitle("Overwrite existing scene")
+          .setContentText("A scene with that name already exists. This will overwrite the existing scene, are you sure you want to continue?")
+          .showAndConfirm()
+      ) {
+        return;
+      }
     }
     scene.setName(sceneName);
     renderController.getSceneProvider().withSceneProtected(scene1 -> scene1.setName(sceneName));
