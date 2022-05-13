@@ -29,6 +29,7 @@
 <?import se.llbit.fx.ToolPane?>
 <?import javafx.scene.layout.FlowPane?>
 
+<?import se.llbit.chunky.ui.elements.DirectoryInputField?>
 <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
   <MenuBar>
     <Menu mnemonicParsing="false" text="Chunky">
@@ -168,6 +169,7 @@
           <CheckBox fx:id="showLauncherBtn" mnemonicParsing="false" text="Show launcher when starting Chunky" />
           <Button fx:id="openSceneDirBtn" mnemonicParsing="false" text="Open Scenes Directory" />
           <Button fx:id="changeSceneDirBtn" mnemonicParsing="false" text="Change Scenes Directory" />
+          <DirectoryInputField fx:id="sceneDirectoryChooser" />
         </VBox>
       </Tab>
       <Tab fx:id="aboutTab" text="About">

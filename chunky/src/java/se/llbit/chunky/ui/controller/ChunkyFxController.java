@@ -88,6 +88,7 @@ import se.llbit.chunky.renderer.scene.Camera;
 import se.llbit.chunky.renderer.scene.RenderResetHandler;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.ui.ChunkMap;
+import se.llbit.chunky.ui.elements.DirectoryInputField;
 import se.llbit.chunky.ui.dialogs.Credits;
 import se.llbit.chunky.ui.DoubleTextField;
 import se.llbit.chunky.ui.IntegerAdjuster;
@@ -153,6 +154,7 @@ public class ChunkyFxController
   @FXML private CheckBox showLauncherBtn;
   @FXML private Button openSceneDirBtn;
   @FXML private Button changeSceneDirBtn;
+  @FXML private DirectoryInputField sceneDirectoryChooser;
   @FXML private Hyperlink documentationLink;
   @FXML private Hyperlink originalDocumentationLink;
   @FXML private Hyperlink gitHubLink;
@@ -598,11 +600,13 @@ public class ChunkyFxController
         new Tooltip("Open the directory where Chunky stores scene descriptions and renders."));
     openSceneDirBtn.setOnAction(e -> openDirectory(chunky.options.sceneDir));
 
-    DirectoryChooser sceneDirectoryChooser = new DirectoryChooser();
-    sceneDirectoryChooser.setTitle("Select directory for scene storage");
+    sceneDirectoryChooser.directoryProperty.set(chunky.options.sceneDir);
+
+    DirectoryChooser sceneDirectoryChooser2 = new DirectoryChooser();
+    sceneDirectoryChooser2.setTitle("Select directory for scene storage");
     changeSceneDirBtn.setOnAction(e -> {
-      sceneDirectoryChooser.setInitialDirectory(chunky.options.sceneDir);
-      File directory = sceneDirectoryChooser.showDialog(changeSceneDirBtn.getScene().getWindow());
+      sceneDirectoryChooser2.setInitialDirectory(chunky.options.sceneDir);
+      File directory = sceneDirectoryChooser2.showDialog(changeSceneDirBtn.getScene().getWindow());
       if(directory.canWrite()) {
         PersistentSettings.setSceneDirectory(directory);
         // TODO: It may be a good idea to not write directly to the shared scene directory.
