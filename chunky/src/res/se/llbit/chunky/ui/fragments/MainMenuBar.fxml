@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import se.llbit.chunky.ui.HyperlinkMenuItem?>
+<MenuBar xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+  <Menu mnemonicParsing="false" text="File">
+    <MenuItem fx:id="loadScene" mnemonicParsing="false" text="Load…"/>
+    <MenuItem fx:id="loadSceneFile" mnemonicParsing="false" text="Load from file…"/>
+    <MenuItem fx:id="saveScene" mnemonicParsing="false" text="Save"/>
+    <MenuItem fx:id="saveSceneAs" mnemonicParsing="false" text="Save as…"/>
+    <MenuItem fx:id="saveSceneCopy" mnemonicParsing="false" text="Save a copy…"/>
+    <SeparatorMenuItem/>
+    <MenuItem fx:id="menuExit" mnemonicParsing="false" text="Quit"/>
+  </Menu>
+  <Menu mnemonicParsing="false" text="Help">
+    <HyperlinkMenuItem link="https://chunky-dev.github.io/docs" text="Chunky Manual"/>
+    <HyperlinkMenuItem link="https://jackjt8.github.io/ChunkyGuide/" text="jackjt8's Guide to Chunky"/>
+    <SeparatorMenuItem/>
+    <HyperlinkMenuItem link="https://github.com/chunky-dev/chunky" text="GitHub Repo"/>
+    <HyperlinkMenuItem link="https://github.com/chunky-dev/chunky/issues" text="Issue Tracker"/>
+    <SeparatorMenuItem/>
+    <HyperlinkMenuItem link="https://www.reddit.com/r/chunky" text="Chunky Subreddit"/>
+    <HyperlinkMenuItem link="https://discord.com/invite/VqcHpsF" text="Discord Server"/>
+    <SeparatorMenuItem/>
+    <MenuItem fx:id="creditsMenuItem" mnemonicParsing="false" text="About"/>
+  </Menu>
+</MenuBar>

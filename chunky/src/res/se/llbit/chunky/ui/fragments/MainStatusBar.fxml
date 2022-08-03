@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.BorderPane?>
+<VBox xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+  <VBox spacing="5.0">
+    <padding>
+      <Insets top="5.0" bottom="5.0" left="10.0" right="10.0"/>
+    </padding>
+    <BorderPane>
+      <left>
+        <Label fx:id="renderTimeLbl" text="Render time: 0"/>
+      </left>
+      <right>
+        <Label fx:id="sppLbl" text="0 SPP, 0 SPS"/>
+      </right>
+    </BorderPane>
+    <BorderPane>
+      <left>
+        <Label fx:id="progressLbl" text="Progress"/>
+      </left>
+      <right>
+        <Label fx:id="etaLbl" text="ETA: N/A"/>
+      </right>
+    </BorderPane>
+  </VBox>
+  <ProgressBar fx:id="progressBar" maxWidth="1.7976931348623157E308" minHeight="20" prefHeight="20" progress="0.0"/>
+</VBox>

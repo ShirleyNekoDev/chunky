@@ -49,7 +49,7 @@ public class ChunkyFx extends Application {
     try {
       ChunkyFx.hostServices = this.getHostServices();
 
-      FXMLLoader loader = new FXMLLoader(getClass().getResource("Chunky.fxml"));
+      FXMLLoader loader = new FXMLLoader(getClass().getResource("MainWindow.fxml"));
       ChunkyFxController controller = new ChunkyFxController(stage, chunkyInstance);
       loader.setController(controller);
       Parent root = loader.load();

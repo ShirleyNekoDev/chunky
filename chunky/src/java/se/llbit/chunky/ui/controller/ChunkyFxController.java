@@ -116,7 +116,6 @@ public class ChunkyFxController
   @FXML private Canvas mapCanvas;
   @FXML private Canvas mapOverlay;
   @FXML private Label mapName;
-  @FXML private MenuItem menuExit;
   @FXML private ToolPane renderControls;
   @FXML private Button changeWorldBtn;
   @FXML private Button reloadWorldBtn;
@@ -135,13 +134,6 @@ public class ChunkyFxController
   @FXML private TabPane mainTabs;
   @FXML private Tab worldMapTab;
   @FXML private Tab previewTab;
-
-  @FXML private MenuItem saveScene;
-  @FXML private MenuItem saveSceneAs;
-  @FXML private MenuItem saveSceneCopy;
-  @FXML private MenuItem loadScene;
-  @FXML private MenuItem loadSceneFile;
-  @FXML private MenuItem creditsMenuItem;
 
   @FXML private ProgressBar progressBar;
   @FXML private Label progressLbl;
@@ -343,6 +335,7 @@ public class ChunkyFxController
   }
 
   @Override public void initialize(URL fxmlUrl, ResourceBundle resources) {
+    /*
     scene = chunky.getSceneManager().getScene();
     renderController = chunky.getRenderController();
     renderManager = renderController.getRenderManager();
@@ -720,6 +713,7 @@ public class ChunkyFxController
     saveDefaultSpp.setTooltip(new Tooltip("Make the current SPP target the default."));
     saveDefaultSpp.setOnAction(e ->
         PersistentSettings.setSppTargetDefault(scene.getTargetSpp()));
+    */
   }
 
   public void openSceneChooser() {

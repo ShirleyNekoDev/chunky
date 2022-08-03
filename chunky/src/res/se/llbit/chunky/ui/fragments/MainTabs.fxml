@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.canvas.Canvas?>
+<TabPane fx:id="mainTabs" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.65" xmlns:fx="http://javafx.com/fxml/1">
+  <Tab fx:id="worldMapTab" text="Map">
+    <StackPane fx:id="mapPane" minWidth="50">
+      <Canvas fx:id="mapCanvas" />
+      <Canvas fx:id="mapOverlay" />
+    </StackPane>
+  </Tab>
+  <Tab fx:id="previewTab" text="Render Preview">
+    <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0"/>
+  </Tab>
+</TabPane>
