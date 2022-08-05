@@ -576,9 +576,12 @@ public class ChunkMap implements ChunkUpdateListener, ChunkViewListener, CameraV
     ChunkView mapView = new ChunkView(view);  // Make thread-local copy.
     World world = mapLoader.getWorld();
     double blockScale = mapView.scale / 16.;
+//    System.out.println("redraw");
     for (PlayerEntityData player : world.getPlayerPositions()) {
+      // TODO: filter players for visible chunks
+      // TODO: reduce huge amounts of players in one spot
+//      System.out.println(player);
       int px = (int) QuickMath.floor(player.x * blockScale);
-      int py = (int) QuickMath.floor(player.y);
       int pz = (int) QuickMath.floor(player.z * blockScale);
       int ppx = px - (int) QuickMath.floor(mapView.x0 * mapView.scale);
       int ppy = pz - (int) QuickMath.floor(mapView.z0 * mapView.scale);

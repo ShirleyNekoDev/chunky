@@ -37,8 +37,15 @@ public class PlayerEntityData {
   public final String uuid;
 
   public PlayerEntityData(Tag player) {
-    Tag pos = player.get("Pos");
-    Tag rotation = player.get("Rotation");
+    Tag posTag = player.get("Pos");
+    x = posTag.get(0).doubleValue();
+    y = posTag.get(1).doubleValue();
+    z = posTag.get(2).doubleValue();
+
+    Tag rotationTag = player.get("Rotation");
+    rotation = rotationTag.get(0).floatValue();
+    pitch = rotationTag.get(1).floatValue();
+    dimension = player.get("Dimension").intValue();
 
     long uuidHi;
     long uuidLo;
@@ -53,43 +60,40 @@ public class PlayerEntityData {
       uuidHi = player.get("UUIDMost").longValue(-1);
     }
     uuid = String.format("%016X%016X", uuidHi, uuidLo);
-    x = pos.get(0).doubleValue();
-    y = pos.get(1).doubleValue();
-    z = pos.get(2).doubleValue();
-    this.rotation = rotation.get(0).floatValue();
-    pitch = rotation.get(1).floatValue();
-    dimension = player.get("Dimension").intValue();
+    // TODO: would instances of UUID be smaller?
 
-    int selectedItem = player.get("SelectedItemSlot").intValue(0);
-
-    for (Tag item : player.get("Inventory").asList()) {
-      int slot = item.get("Slot").byteValue(0);
-      switch (slot) {
-        case -106:
-          shield = item;
-          break;
-        case 100:
-          feet = item;
-          break;
-        case 101:
-          legs = item;
-          break;
-        case 102:
-          chestplate = item;
-          break;
-        case 103:
-          head = item;
-          break;
-      }
-      if (slot == selectedItem) {
-        mainHand = item;
-      }
-    }
+    // TODO: convert compound tags to JsonObject using PlayerEntity#parseItem()
+    // drop unnecessary compound tag details like fire work effects or enchantments to safe memory space
+//    int selectedItemSlot = player.get("SelectedItemSlot").intValue(0);
+//
+//    for (Tag item : player.get("Inventory").asList()) {
+//      int slot = item.get("Slot").byteValue(0);
+//      switch (slot) {
+//        case -106:
+//          shield = item;
+//          break;
+//        case 100:
+//          feet = item;
+//          break;
+//        case 101:
+//          legs = item;
+//          break;
+//        case 102:
+//          chestplate = item;
+//          break;
+//        case 103:
+//          head = item;
+//          break;
+//      }
+//      if (slot == selectedItemSlot) {
+//        mainHand = item;
+//      }
+//    }
   }
 
   @Override
   public String toString() {
-    return String.format("%d: %d, %d, %d", dimension, (int) x, (int) y, (int) z);
+    return String.format("[%s] dimension=%d, x=%d, y=%d, z=%d", uuid, dimension, (int) x, (int) y, (int) z);
   }
 
   @Override

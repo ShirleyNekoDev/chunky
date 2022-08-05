@@ -176,6 +176,7 @@ public class World implements Comparable<World> {
       if (!player.isError()) {
         playerEntities.add(new PlayerEntityData(player));
       }
+      // TODO: better player (re)loading
       loadAdditionalPlayers(worldDirectory, playerEntities);
 
       boolean haveSpawnPos = !(spawnX.isError() || spawnY.isError() || spawnZ.isError());
