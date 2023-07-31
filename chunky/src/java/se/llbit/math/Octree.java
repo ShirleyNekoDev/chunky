@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import it.unimi.dsi.fastutil.ints.IntIntMutablePair;
-import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
-import it.unimi.dsi.fastutil.io.FastBufferedOutputStream;
 import org.apache.commons.math3.util.FastMath;
 
 import se.llbit.chunky.block.Air;
@@ -805,12 +803,13 @@ public class Octree {
 
     File tempFile = File.createTempFile("octree-conversion", ".bin");
     try {
-      try (DataOutputStream out = new DataOutputStream(new FastBufferedOutputStream(new PositionalOutputStream(Files.newOutputStream(tempFile.toPath()), position -> {
+      // do not use FastBufferedOutputStream here, features are not needed (linear write)!
+      try (DataOutputStream out = new DataOutputStream(new PositionalOutputStream(new BufferedOutputStream(Files.newOutputStream(tempFile.toPath())), position -> {
         if (nodeCount != 0) {
           int progress = (int) Math.min(position * writeProgressScaler, 500);
           task.updateInterval(progress, 1);
         }
-      })))) {
+      }))) {
         implementation.store(out);
       }
       // Allow the GC to free memory during construction of the new octree
@@ -818,9 +817,10 @@ public class Octree {
       implementation = new PackedOctree(1);
 
       double readProgressScaler = 500.0 / tempFile.length();
-      try (DataInputStream in = new DataInputStream(new FastBufferedInputStream(new PositionalInputStream(Files.newInputStream(tempFile.toPath()), position -> {
+      // do not use FastBufferedInputStream here, features are not needed (linear read)!
+      try (DataInputStream in = new DataInputStream(new PositionalInputStream(new BufferedInputStream(Files.newInputStream(tempFile.toPath())), position -> {
         task.updateInterval(1000, (int) (position * readProgressScaler) + 500, 1);
-      })))) {
+      }))) {
         implementation = factory.loadWithNodeCount(nodeCount, in);
       }
     } finally {

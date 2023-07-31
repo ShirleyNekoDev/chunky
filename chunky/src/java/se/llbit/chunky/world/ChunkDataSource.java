@@ -16,8 +16,6 @@
  */
 package se.llbit.chunky.world;
 
-import it.unimi.dsi.fastutil.io.FastBufferedInputStream;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,11 +45,15 @@ public class ChunkDataSource {
     return data != null && data.length > 0;
   }
 
+  /**
+   * Constructs an InputStream for the NBT data of this chunk.
+   */
   public InputStream getInputStream() throws IOException {
-    return new FastBufferedInputStream(
-      compressionScheme.wrapInputStream(
-        new ByteArrayInputStream(data)
-      )
+    // do not use FastBufferedInputStream here, features are not needed!
+    // - buffer already provided by decompression stream
+    // - ByteArrayInputStream provides true skipping
+    return compressionScheme.wrapInputStream(
+      new ByteArrayInputStream(data)
     );
   }
 
